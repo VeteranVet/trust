@@ -83,7 +83,7 @@
       <div id="tb-form-login">
         <div style="margin-bottom:1rem;">
           <label style="font-size:0.8rem;font-weight:700;color:#4a5568;display:block;margin-bottom:0.4rem;">Username</label>
-          <input id="tb-login-username" type="text" placeholder="your_username" autocomplete="username" style="width:100%;padding:0.75rem 1rem;border:1.5px solid #e8edf5;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2477d4'" onblur="this.style.borderColor='#e8edf5'">
+          <input id="tb-login-username" type="text" placeholder="Username" autocomplete="username" style="width:100%;padding:0.75rem 1rem;border:1.5px solid #e8edf5;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2477d4'" onblur="this.style.borderColor='#e8edf5'">
         </div>
         <div style="margin-bottom:1.4rem;">
           <label style="font-size:0.8rem;font-weight:700;color:#4a5568;display:block;margin-bottom:0.4rem;">Password</label>
@@ -95,12 +95,12 @@
       <div id="tb-form-register" style="display:none;">
         <div style="margin-bottom:1rem;">
           <label style="font-size:0.8rem;font-weight:700;color:#4a5568;display:block;margin-bottom:0.4rem;">Username</label>
-          <input id="tb-reg-username" type="text" placeholder="your_username" autocomplete="username" style="width:100%;padding:0.75rem 1rem;border:1.5px solid #e8edf5;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2477d4'" onblur="this.style.borderColor='#e8edf5'">
+          <input id="tb-reg-username" type="text" placeholder="Username" autocomplete="username" style="width:100%;padding:0.75rem 1rem;border:1.5px solid #e8edf5;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2477d4'" onblur="this.style.borderColor='#e8edf5'">
           <div style="font-size:0.73rem;color:#8a99b3;margin-top:0.3rem;">3–20 characters. Letters, numbers, underscores only.</div>
         </div>
         <div style="margin-bottom:1.4rem;">
           <label style="font-size:0.8rem;font-weight:700;color:#4a5568;display:block;margin-bottom:0.4rem;">Password</label>
-          <input id="tb-reg-password" type="password" placeholder="At least 6 characters" autocomplete="new-password" style="width:100%;padding:0.75rem 1rem;border:1.5px solid #e8edf5;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2477d4'" onblur="this.style.borderColor='#e8edf5'" onkeydown="if(event.key==='Enter')TBAuthUI.submitRegister()">
+          <input id="tb-reg-password" type="password" placeholder="Password" autocomplete="new-password" style="width:100%;padding:0.75rem 1rem;border:1.5px solid #e8edf5;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;box-sizing:border-box;" onfocus="this.style.borderColor='#2477d4'" onblur="this.style.borderColor='#e8edf5'" onkeydown="if(event.key==='Enter')TBAuthUI.submitRegister()">
         </div>
         <button onclick="TBAuthUI.submitRegister()" style="width:100%;padding:0.85rem;background:linear-gradient(135deg,#2477d4,#1a5faa);border:none;border-radius:8px;color:white;font-family:'DM Sans',sans-serif;font-size:0.95rem;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(36,119,212,0.35);">Create Account</button>
       </div>
