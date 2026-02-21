@@ -1,0 +1,1797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><defs><linearGradient id=%22g%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22><stop offset=%220%25%22 stop-color=%22%232477d4%22/><stop offset=%22100%25%22 stop-color=%22%230ea8a8%22/></linearGradient></defs><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22url(%23g)%22/><path d=%22M50 10 L18 24 L18 48 C18 68 32 85 50 91 C68 85 82 68 82 48 L82 24 Z%22 fill=%22white%22/></svg>" />
+  <title>Start a Transaction — TrustBridge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="auth.js"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --navy: #0d2b52;
+      --navy-deep: #071a35;
+      --navy-mid: #163a6e;
+      --blue: #1a5faa;
+      --blue-bright: #2477d4;
+      --teal: #0ea8a8;
+      --white: #ffffff;
+      --off-white: #f4f7fb;
+      --light-gray: #e8edf5;
+      --text-dark: #0d1f3c;
+      --text-mid: #4a5568;
+      --text-light: #8a99b3;
+      --gold: #c99a2e;
+      --green: #27a85e;
+      --red: #e53e3e;
+    }
+    html { scroll-behavior: smooth; }
+    @keyframes timerPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-dark);
+      background: var(--off-white);
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 1000;
+      background: var(--navy-deep);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem; height: 68px;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--blue-bright), var(--teal));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-icon svg { width: 20px; height: 20px; fill: white; }
+    .logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem; font-weight: 700; color: var(--white);
+    }
+    .logo-text span { color: var(--teal); }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+    .nav-link {
+      font-size: 0.85rem; color: rgba(255,255,255,0.6);
+      text-decoration: none; transition: color 0.2s;
+    }
+    .nav-link:hover { color: white; }
+
+    /* ── PAGE LAYOUT ── */
+    .page-wrap {
+      padding-top: 68px;
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+    }
+
+    /* ── PROGRESS HEADER ── */
+    .progress-header {
+      background: white;
+      border-bottom: 1px solid var(--light-gray);
+      padding: 0;
+    }
+    .progress-header-inner {
+      max-width: 860px; margin: 0 auto; padding: 0 2rem;
+    }
+    .steps-bar {
+      display: flex; align-items: stretch;
+      gap: 0;
+    }
+    .step-tab {
+      flex: 1;
+      display: flex; align-items: center; gap: 12px;
+      padding: 1.1rem 0;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      transition: all 0.25s;
+      padding-right: 1.5rem;
+    }
+    .step-tab + .step-tab { padding-left: 1.5rem; border-left: 1px solid var(--light-gray); }
+    .step-tab.active { border-bottom-color: var(--blue-bright); }
+    .step-tab.done { border-bottom-color: var(--green); }
+    .step-tab.locked { opacity: 0.4; cursor: not-allowed; }
+    .step-bubble {
+      width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.78rem; font-weight: 700;
+      background: var(--light-gray); color: var(--text-mid);
+      transition: all 0.25s;
+    }
+    .step-tab.active .step-bubble { background: var(--blue-bright); color: white; }
+    .step-tab.done .step-bubble { background: var(--green); color: white; }
+    .step-tab-label { font-size: 0.82rem; font-weight: 600; color: var(--text-mid); transition: color 0.25s; }
+    .step-tab.active .step-tab-label { color: var(--navy); }
+    .step-tab.done .step-tab-label { color: var(--green); }
+    .step-tab-sub { font-size: 0.73rem; color: var(--text-light); font-weight: 400; }
+
+    /* ── MAIN ── */
+    .main {
+      flex: 1;
+      max-width: 860px; margin: 0 auto;
+      padding: 2.5rem 2rem 4rem;
+      width: 100%;
+    }
+
+    /* ── STEP PANELS ── */
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+
+    .panel-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.7rem; font-weight: 700;
+      color: var(--navy); margin-bottom: 0.4rem;
+    }
+    .panel-sub {
+      font-size: 0.9rem; color: var(--text-mid);
+      margin-bottom: 2rem; line-height: 1.6;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: white;
+      border: 1px solid var(--light-gray);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .card-title {
+      font-size: 0.95rem; font-weight: 700;
+      color: var(--navy); margin-bottom: 1.2rem;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .card-title-icon {
+      width: 28px; height: 28px; border-radius: 7px;
+      background: rgba(26,95,170,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem;
+    }
+
+    /* ── CATEGORY GRID (Step 1) ── */
+    .category-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+    .cat-option {
+      border: 2px solid var(--light-gray);
+      border-radius: 12px;
+      padding: 1.2rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--off-white);
+    }
+    .cat-option:hover { border-color: var(--blue-bright); background: rgba(36,119,212,0.04); }
+    .cat-option.selected { border-color: var(--blue-bright); background: rgba(36,119,212,0.07); box-shadow: 0 0 0 3px rgba(36,119,212,0.12); }
+    .cat-option-icon { font-size: 1.8rem; margin-bottom: 0.5rem; pointer-events: none; }
+    .cat-option-label { font-size: 0.8rem; font-weight: 600; color: var(--navy); pointer-events: none; }
+
+    /* ── FORM ELEMENTS ── */
+    .form-row { display: grid; gap: 1rem; margin-bottom: 1.2rem; }
+    .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+    .form-row.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    label { font-size: 0.82rem; font-weight: 600; color: var(--navy); }
+    label .optional { font-weight: 400; color: var(--text-light); font-size: 0.75rem; }
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    input[type="tel"],
+    select, textarea {
+      width: 100%; padding: 0.7rem 0.9rem;
+      border: 1.5px solid var(--light-gray);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem; color: var(--text-dark);
+      background: white;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--blue-bright);
+      box-shadow: 0 0 0 3px rgba(36,119,212,0.1);
+    }
+    input.error, select.error { border-color: var(--red); }
+    .field-error { font-size: 0.75rem; color: var(--red); margin-top: 2px; display: none; }
+    .field-error.show { display: block; }
+    textarea { resize: vertical; min-height: 90px; }
+    .input-prefix-wrap { position: relative; }
+    .input-prefix { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); font-size: 0.9rem; font-weight: 600; color: var(--text-mid); pointer-events: none; }
+    .input-prefix-wrap input { padding-left: 1.8rem; }
+
+    /* ── ROLE SELECTOR ── */
+    .role-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .role-card { border: 2px solid var(--light-gray); border-radius: 12px; padding: 1.4rem; cursor: pointer; transition: all 0.2s; background: var(--off-white); }
+    .role-card:hover { border-color: var(--blue-bright); }
+    .role-card.selected { border-color: var(--blue-bright); background: rgba(36,119,212,0.05); }
+    .role-card-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .role-card-title { font-size: 0.92rem; font-weight: 700; color: var(--navy); margin-bottom: 0.3rem; }
+    .role-card-desc { font-size: 0.78rem; color: var(--text-mid); line-height: 1.5; }
+    .role-radio { display: none; }
+
+    /* ── CURRENCY ROW ── */
+    .currency-prefix { display: flex; gap: 0; }
+    .currency-prefix select { width: 90px; border-radius: 8px 0 0 8px; border-right: none; flex-shrink: 0; }
+    .currency-prefix input { border-radius: 0 8px 8px 0; flex: 1; }
+
+    /* ── INSPECTION PERIOD ── */
+    .inspection-options { display: flex; gap: 0.7rem; flex-wrap: wrap; }
+    .inspection-pill {
+      padding: 0.5rem 1rem;
+      border: 2px solid var(--light-gray);
+      border-radius: 50px;
+      font-size: 0.82rem; font-weight: 600;
+      color: var(--text-mid);
+      cursor: pointer; transition: all 0.2s;
+      background: white;
+    }
+    .inspection-pill:hover { border-color: var(--blue-bright); color: var(--blue-bright); }
+    .inspection-pill.selected { border-color: var(--blue-bright); background: var(--blue-bright); color: white; }
+
+    /* ── FEE SUMMARY CARD ── */
+    .fee-summary {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+      border-radius: 16px; padding: 1.8rem;
+      color: white; margin-bottom: 1.5rem;
+    }
+    .fee-summary-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.5); margin-bottom: 1.2rem; }
+    .fee-row { display: flex; justify-content: space-between; align-items: center; padding: 0.55rem 0; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 0.87rem; }
+    .fee-row:last-child { border-bottom: none; }
+    .fee-label { color: rgba(255,255,255,0.65); }
+    .fee-value { font-weight: 600; color: white; }
+    .fee-value.teal { color: var(--teal); }
+    .fee-total-row { display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; margin-top: 0.5rem; }
+    .fee-total-label { font-size: 0.85rem; color: rgba(255,255,255,0.5); }
+    .fee-total-value { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: white; }
+    .fee-note { font-size: 0.75rem; color: rgba(255,255,255,0.35); margin-top: 0.7rem; line-height: 1.5; }
+
+    /* ── WHO PAYS FEE ── */
+    .fee-split-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; }
+    .fee-split-card { border: 2px solid var(--light-gray); border-radius: 10px; padding: 1rem; text-align: center; cursor: pointer; transition: all 0.2s; background: white; }
+    .fee-split-card:hover { border-color: var(--blue-bright); }
+    .fee-split-card.selected { border-color: var(--blue-bright); background: rgba(36,119,212,0.05); }
+    .fee-split-title { font-size: 0.82rem; font-weight: 700; color: var(--navy); margin-bottom: 0.3rem; }
+    .fee-split-desc { font-size: 0.72rem; color: var(--text-mid); }
+
+    /* ── REVIEW SECTION (Step 4) ── */
+    .review-grid { display: flex; flex-direction: column; gap: 0; }
+    .review-item { display: flex; justify-content: space-between; align-items: flex-start; padding: 0.9rem 0; border-bottom: 1px solid var(--light-gray); }
+    .review-item:last-child { border-bottom: none; }
+    .review-key { font-size: 0.82rem; color: var(--text-mid); font-weight: 500; }
+    .review-val { font-size: 0.88rem; color: var(--navy); font-weight: 600; text-align: right; max-width: 60%; }
+    .review-edit { font-size: 0.75rem; color: var(--blue-bright); cursor: pointer; text-decoration: underline; margin-left: 8px; white-space: nowrap; }
+
+    /* ── AGREEMENT ── */
+    .agreement-box {
+      background: var(--off-white);
+      border: 1px solid var(--light-gray);
+      border-radius: 12px; padding: 1.5rem;
+      max-height: 180px; overflow-y: auto;
+      font-size: 0.8rem; color: var(--text-mid);
+      line-height: 1.7; margin-bottom: 1.2rem;
+    }
+    .agreement-box h4 { color: var(--navy); margin-bottom: 0.5rem; font-size: 0.85rem; }
+    .checkbox-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 1rem; }
+    .checkbox-row input[type="checkbox"] { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; accent-color: var(--blue-bright); }
+    .checkbox-row label { font-size: 0.85rem; color: var(--text-mid); line-height: 1.5; cursor: pointer; }
+    .checkbox-row label a { color: var(--blue-bright); }
+
+    /* ── SUCCESS PANEL (Step 5) ── */
+    .success-panel { text-align: center; padding: 3rem 2rem; }
+    .success-icon {
+      width: 80px; height: 80px;
+      background: linear-gradient(135deg, var(--green), #36c772);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; margin: 0 auto 1.5rem;
+      box-shadow: 0 8px 32px rgba(39,168,94,0.3);
+      animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes pop { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+    .success-title { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--navy); margin-bottom: 0.5rem; }
+    .success-sub { font-size: 1rem; color: var(--text-mid); line-height: 1.7; max-width: 480px; margin: 0 auto 2rem; }
+    .tx-id-box {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--off-white);
+      border: 1px solid var(--light-gray);
+      border-radius: 10px; padding: 0.8rem 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .tx-id-label { font-size: 0.8rem; color: var(--text-mid); }
+    .tx-id-value { font-size: 1rem; font-weight: 700; color: var(--navy); font-family: monospace; }
+    .copy-btn { font-size: 0.75rem; color: var(--blue-bright); cursor: pointer; padding: 4px 8px; border: 1px solid rgba(36,119,212,0.3); border-radius: 6px; transition: all 0.2s; }
+    .copy-btn:hover { background: rgba(36,119,212,0.08); }
+    .success-actions { display: flex; gap: 1rem; justify-content: center; }
+
+    /* ── NAVIGATION BUTTONS ── */
+    .nav-buttons { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; }
+    .btn-back { padding: 0.8rem 1.8rem; background: transparent; border: 1.5px solid var(--light-gray); border-radius: 8px; color: var(--text-mid); font-size: 0.92rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+    .btn-back:hover { border-color: var(--text-mid); color: var(--text-dark); }
+    .btn-next { padding: 0.85rem 2.2rem; background: linear-gradient(135deg, var(--blue-bright), var(--blue)); border: none; border-radius: 8px; color: white; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 20px rgba(36,119,212,0.35); }
+    .btn-next:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(36,119,212,0.45); }
+    .btn-submit { padding: 0.85rem 2.2rem; background: linear-gradient(135deg, var(--green), #1d9050); border: none; border-radius: 8px; color: white; font-size: 0.95rem; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 20px rgba(39,168,94,0.35); display: flex; align-items: center; gap: 8px; }
+    .btn-submit:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(39,168,94,0.45); }
+    .btn-primary-full { padding: 0.85rem 2rem; background: linear-gradient(135deg, var(--blue-bright), var(--blue)); border: none; border-radius: 8px; color: white; font-size: 0.92rem; font-weight: 700; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 20px rgba(36,119,212,0.3); }
+    .btn-primary-full:hover { transform: translateY(-1px); }
+    .btn-outline { padding: 0.85rem 2rem; background: transparent; border: 1.5px solid var(--light-gray); border-radius: 8px; color: var(--text-mid); font-size: 0.92rem; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-outline:hover { border-color: var(--navy); color: var(--navy); }
+
+    /* ── INFO BADGE ── */
+    .info-badge { display: flex; align-items: flex-start; gap: 10px; background: rgba(36,119,212,0.06); border: 1px solid rgba(36,119,212,0.15); border-radius: 10px; padding: 1rem; margin-bottom: 1.2rem; }
+    .info-badge-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+    .info-badge p { font-size: 0.82rem; color: var(--text-mid); line-height: 1.6; }
+    .info-badge strong { color: var(--navy); }
+
+    /* ── MISC ── */
+    .section-divider { border: none; border-top: 1px solid var(--light-gray); margin: 1.5rem 0; }
+    .helper-text { font-size: 0.77rem; color: var(--text-light); margin-top: 4px; line-height: 1.5; }
+
+    @media (max-width: 700px) {
+      .category-grid { grid-template-columns: repeat(2, 1fr); }
+      .form-row.cols-2, .form-row.cols-3 { grid-template-columns: 1fr; }
+      .role-selector { grid-template-columns: 1fr; }
+      .fee-split-options { grid-template-columns: 1fr; }
+      .steps-bar { overflow-x: auto; }
+      .step-tab-sub { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1zm0 4.9l5 2.23V11c0 3.46-2.38 6.69-5 7.93-2.62-1.24-5-4.47-5-7.93V8.13L12 5.9z"/></svg>
+      </div>
+      <span class="logo-text">Trust<span>Bridge</span></span>
+    </a>
+    <div class="nav-right">
+      <div id="tb-nav-auth" style="display:flex;align-items:center;gap:0.7rem;"></div>
+      <a href="index.html" class="nav-link">← Back to Home</a>
+    </div>
+  </div>
+</nav>
+
+<!-- PROGRESS BAR -->
+<div class="page-wrap">
+  <div class="progress-header">
+    <div class="progress-header-inner">
+      <div class="steps-bar">
+        <div class="step-tab active" data-step="1" onclick="goToStep(1)">
+          <div class="step-bubble">1</div>
+          <div>
+            <div class="step-tab-label">Transaction Type</div>
+            <div class="step-tab-sub">What are you transacting?</div>
+          </div>
+        </div>
+        <div class="step-tab locked" data-step="2" onclick="goToStep(2)">
+          <div class="step-bubble">2</div>
+          <div>
+            <div class="step-tab-label">Details</div>
+            <div class="step-tab-sub">Amount & description</div>
+          </div>
+        </div>
+        <div class="step-tab locked" data-step="3" onclick="goToStep(3)">
+          <div class="step-bubble">3</div>
+          <div>
+            <div class="step-tab-label">Party Details</div>
+            <div class="step-tab-sub">Your info & role</div>
+          </div>
+        </div>
+        <div class="step-tab locked" data-step="4" onclick="goToStep(4)">
+          <div class="step-bubble">4</div>
+          <div>
+            <div class="step-tab-label">Review & Submit</div>
+            <div class="step-tab-sub">Confirm everything</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+
+    <!-- ═══ STEP 1: TRANSACTION TYPE ═══ -->
+    <div class="step-panel active" id="panel-1">
+      <h1 class="panel-title">What are you transacting?</h1>
+      <p class="panel-sub">Select the category that best describes your transaction. This helps us apply the right protections and terms.</p>
+
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">🏷️</div>
+          Select a Transaction Category
+        </div>
+        <div class="category-grid" id="categoryGrid">
+          <div class="cat-option" data-value="domain">
+            <div class="cat-option-icon">🌐</div>
+            <div class="cat-option-label">Domain Name</div>
+          </div>
+          <div class="cat-option" data-value="real-estate">
+            <div class="cat-option-icon">🏠</div>
+            <div class="cat-option-label">Real Estate</div>
+          </div>
+          <div class="cat-option" data-value="vehicle">
+            <div class="cat-option-icon">🚗</div>
+            <div class="cat-option-label">Motor Vehicle</div>
+          </div>
+          <div class="cat-option" data-value="tech">
+            <div class="cat-option-icon">💻</div>
+            <div class="cat-option-label">Tech / Software</div>
+          </div>
+          <div class="cat-option" data-value="luxury">
+            <div class="cat-option-icon">💎</div>
+            <div class="cat-option-label">Luxury Goods</div>
+          </div>
+          <div class="cat-option" data-value="business">
+            <div class="cat-option-icon">🏢</div>
+            <div class="cat-option-label">Business Sale</div>
+          </div>
+          <div class="cat-option" data-value="digital">
+            <div class="cat-option-icon">🎨</div>
+            <div class="cat-option-label">Digital Assets</div>
+          </div>
+          <div class="cat-option" data-value="services">
+            <div class="cat-option-icon">🔧</div>
+            <div class="cat-option-label">Services</div>
+          </div>
+        </div>
+        <p id="cat-error" class="field-error" style="margin-top:10px;">Please select a transaction category.</p>
+      </div>
+
+      <div class="info-badge">
+        <span class="info-badge-icon">ℹ️</span>
+        <p>Not sure which category fits? <strong>General Merchandise</strong> covers most physical goods. You can add notes in the details step. Our team reviews all transactions before funds are collected.</p>
+      </div>
+
+      <div class="nav-buttons">
+        <div></div>
+        <button class="btn-next" onclick="nextStep(1)">
+          Continue <span>→</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══ STEP 2: TRANSACTION DETAILS ═══ -->
+    <div class="step-panel" id="panel-2">
+      <h1 class="panel-title">Transaction Details</h1>
+      <p class="panel-sub">Tell us about the specifics of the deal — the amount, what's being transacted, and how long the inspection period will be.</p>
+
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">💰</div>
+          Amount & Currency
+        </div>
+        <div class="form-row cols-2">
+          <div class="form-group">
+            <label>Transaction Amount</label>
+            <div class="currency-prefix">
+              <select id="currency">
+                <option value="USD">USD $</option>
+                <option value="CAD">CAD $</option>
+                <option value="GBP">GBP £</option>
+                <option value="EUR">EUR €</option>
+                <option value="AUD">AUD $</option>
+              </select>
+              <input type="number" id="amount" placeholder="0.00" min="1" step="0.01" oninput="updateFee()" />
+            </div>
+            <span class="field-error" id="amount-error">Please enter a valid transaction amount.</span>
+          </div>
+          <div class="form-group">
+            <label>Payment Method</label>
+            <select id="payment-method">
+              <option value="">Select payment method...</option>
+              <option value="wire">Wire Transfer</option>
+              <option value="ach">ACH / Bank Transfer</option>
+              <option value="card">Credit / Debit Card</option>
+              <option value="crypto">Cryptocurrency</option>
+            </select>
+            <span class="field-error" id="payment-error">Please select a payment method.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- hidden inputs always present -->
+      <input type="hidden" id="tx-service-type" />
+
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">📝</div>
+          Description
+        </div>
+
+        <!-- ── STANDARD fields (shown for all categories EXCEPT services) ── -->
+        <div id="desc-standard">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Transaction Title</label>
+              <input type="text" id="tx-title" placeholder="e.g. Sale of premium-domain.com" />
+              <span class="field-error" id="title-error">Please enter a transaction title.</span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Description <span class="optional">(optional but recommended)</span></label>
+              <textarea id="tx-desc" placeholder="Describe what is being bought or sold, any important conditions, delivery method, etc."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SERVICES fields (shown only when category = services) ── -->
+        <div id="desc-services" style="display:none;">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Select the Service Type</label>
+              <div id="svc-dropdown" style="position:relative;">
+                <div id="svc-trigger" onclick="toggleSvcDropdown()" style="
+                  display:flex; align-items:center; gap:10px;
+                  padding:0.75rem 1rem; border:1.5px solid #e8edf5; border-radius:8px;
+                  background:white; cursor:pointer; user-select:none;
+                  font-family:'DM Sans',sans-serif; font-size:0.9rem; color:#8a99b3;
+                  transition:border-color 0.2s;
+                ">
+                  <span id="svc-trigger-icon" style="display:none;flex-shrink:0;"></span>
+                  <span id="svc-trigger-label" style="flex:1;">— Choose a service —</span>
+                  <svg id="svc-chevron" viewBox="0 0 12 8" width="12" height="8" style="flex-shrink:0;transition:transform 0.2s;"><path d="M1 1l5 5 5-5" stroke="#8a99b3" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+                </div>
+                <div id="svc-panel" style="
+                  display:none; position:absolute; top:calc(100% + 4px); left:0; right:0;
+                  background:white; border:1.5px solid #e8edf5; border-radius:10px;
+                  box-shadow:0 8px 32px rgba(13,43,82,0.13); z-index:500;
+                  max-height:340px; overflow-y:auto;
+                "><!-- groups injected by JS --></div>
+              </div>
+              <span class="field-error" id="service-type-error">Please select a service type.</span>
+            </div>
+          </div>
+          <div class="form-row" id="other-desc-row" style="display:none;">
+            <div class="form-group">
+              <label>Describe the Service <span class="optional">(required for "Other")</span></label>
+              <textarea id="tx-desc-other" placeholder="Please describe the service you're receiving..."></textarea>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <style>
+        /* ── Custom Service Dropdown ── */
+        #svc-panel::-webkit-scrollbar { width:6px; }
+        #svc-panel::-webkit-scrollbar-track { background:transparent; }
+        #svc-panel::-webkit-scrollbar-thumb { background:#e8edf5; border-radius:3px; }
+
+        .svc-group-label {
+          padding:0.55rem 1rem 0.25rem;
+          font-size:0.7rem; font-weight:700; letter-spacing:0.06em;
+          color:#8a99b3; text-transform:uppercase;
+          border-top:1px solid #f0f4fa;
+        }
+        .svc-group-label:first-child { border-top:none; }
+
+        .svc-option {
+          display:flex; align-items:center; gap:10px;
+          padding:0.6rem 1rem; cursor:pointer;
+          font-size:0.88rem; font-weight:500; color:#0d1f3c;
+          transition:background 0.13s;
+        }
+        .svc-option:hover { background:#f4f7fb; }
+        .svc-option.selected { background:#eef4ff; color:#2477d4; font-weight:600; }
+
+        .svc-logo {
+          width:22px; height:22px; border-radius:5px; flex-shrink:0;
+          display:flex; align-items:center; justify-content:center;
+          overflow:hidden;
+        }
+        .svc-logo svg { width:22px; height:22px; display:block; }
+      </style>
+
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">🔍</div>
+          Inspection Period
+        </div>
+        <p style="font-size:0.82rem; color:var(--text-mid); margin-bottom:1rem; line-height:1.6;">
+          After the seller delivers, how many days does the buyer have to inspect before TrustBridge releases funds?
+        </p>
+        <div class="inspection-options" id="inspectionOptions">
+          <div class="inspection-pill" data-value="1" onclick="selectInspection(this)">1 Day</div>
+          <div class="inspection-pill selected" data-value="3" onclick="selectInspection(this)">3 Days</div>
+          <div class="inspection-pill" data-value="5" onclick="selectInspection(this)">5 Days</div>
+          <div class="inspection-pill" data-value="7" onclick="selectInspection(this)">7 Days</div>
+          <div class="inspection-pill" data-value="14" onclick="selectInspection(this)">14 Days</div>
+          <div class="inspection-pill" data-value="30" onclick="selectInspection(this)">30 Days</div>
+        </div>
+      </div>
+
+      <!-- Fee Preview -->
+      <div class="fee-summary" id="feeSummary">
+        <div class="fee-summary-title">Estimated Fee Breakdown</div>
+        <div class="fee-row">
+          <span class="fee-label">Transaction Amount</span>
+          <span class="fee-value" id="fee-amount-display">$0.00</span>
+        </div>
+        <div class="fee-row">
+          <span class="fee-label">TrustBridge Escrow Fee</span>
+          <span class="fee-value teal" id="fee-escrow-display">$250.00</span>
+        </div>
+        <div class="fee-row">
+          <span class="fee-label">Payment Processing Fee</span>
+          <span class="fee-value" id="fee-processing-display">$0.00</span>
+        </div>
+        <div class="fee-total-row">
+          <span class="fee-total-label">Total Buyer Pays</span>
+          <span class="fee-total-value" id="fee-total-display">$250.00</span>
+        </div>
+        <p class="fee-note">* Flat $250 escrow fee applies to all transactions, regardless of size. Final fees confirmed before payment.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">⚖️</div>
+          Who Pays the Escrow Fee?
+        </div>
+        <div class="fee-split-options">
+          <div class="fee-split-card selected" data-value="buyer" onclick="selectFeePayer(this)">
+            <div class="fee-split-title">Buyer Pays</div>
+            <div class="fee-split-desc">The buyer covers all escrow fees on top of the transaction amount.</div>
+          </div>
+          <div class="fee-split-card" data-value="seller" onclick="selectFeePayer(this)">
+            <div class="fee-split-title">Seller Pays</div>
+            <div class="fee-split-desc">The fee is deducted from the amount paid out to the seller.</div>
+          </div>
+          <div class="fee-split-card" data-value="split" onclick="selectFeePayer(this)">
+            <div class="fee-split-title">Split 50/50</div>
+            <div class="fee-split-desc">Both parties share the escrow fee equally.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn-back" onclick="prevStep(2)">← Back</button>
+        <button class="btn-next" onclick="nextStep(2)">Continue →</button>
+      </div>
+    </div>
+
+    <!-- ═══ STEP 3: YOUR DETAILS ═══ -->
+    <div class="step-panel" id="panel-3">
+      <h1 class="panel-title">Party Details</h1>
+      <p class="panel-sub">Tell us your role, enter your information, invite the other party, and choose a trusted middle-man to host your transaction.</p>
+
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">👤</div>
+          Your Role in this Transaction
+        </div>
+        <div class="role-selector">
+          <div class="role-card selected" data-value="buyer" onclick="selectRole(this)">
+            <input type="radio" name="role" class="role-radio" value="buyer" checked />
+            <div class="role-card-icon">🛒</div>
+            <div class="role-card-title">I am the Buyer</div>
+            <div class="role-card-desc">I will be sending funds into escrow and receiving goods or services.</div>
+          </div>
+          <div class="role-card" data-value="seller" onclick="selectRole(this)">
+            <input type="radio" name="role" class="role-radio" value="seller" />
+            <div class="role-card-icon">📦</div>
+            <div class="role-card-title">I am the Seller</div>
+            <div class="role-card-desc">I will be delivering goods or services and receiving funds from escrow.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">📋</div>
+          Party Details
+        </div>
+        <div class="form-row cols-2">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" id="my-first" placeholder="John" />
+            <span class="field-error" id="my-first-error">Required.</span>
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" id="my-last" placeholder="Smith" />
+            <span class="field-error" id="my-last-error">Required.</span>
+          </div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="form-group">
+            <label>Phone Number <span class="optional">(optional)</span></label>
+            <input type="tel" id="my-phone" placeholder="+1 (555) 000-0000" />
+          </div>
+          <div class="form-group">
+            <label>Country</label>
+            <select id="my-country">
+              <option value="">Select country...</option>
+              <option value="US">United States</option>
+              <option value="CA">Canada</option>
+              <option value="GB">United Kingdom</option>
+              <option value="AU">Australia</option>
+              <option value="DE">Germany</option>
+              <option value="FR">France</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="form-group">
+            <label>Account Type</label>
+            <select id="my-account-type">
+              <option value="individual">Individual</option>
+              <option value="business">Business / Company</option>
+            </select>
+          </div>
+          <div class="form-group" id="company-row" style="display:none;">
+            <label>Company Name</label>
+            <input type="text" id="my-company" placeholder="Acme Corp Ltd." />
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">🤝</div>
+          Invite the Other Party
+        </div>
+        <p style="font-size:0.88rem;color:var(--text-mid);margin-bottom:1.2rem;line-height:1.6;">Enter the TrustBridge username of the buyer or seller you're transacting with. They'll be linked to this transaction once it's created.</p>
+        <div class="form-group">
+          <label>Their TrustBridge Username</label>
+          <input type="text" id="counterparty-username" placeholder="TrustBridge Username" />
+          <span class="field-error" id="counterparty-error">Please enter the other party's username.</span>
+          <div id="counterparty-status" style="margin-top:0.4rem;font-size:0.8rem;"></div>
+        </div>
+      </div>
+
+      <!-- ── MIDDLE-MAN SELECTOR ── -->
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">🛡️</div>
+          Choose Middle-Man to Host
+        </div>
+        <p style="font-size:0.88rem;color:var(--text-mid);margin-bottom:1.2rem;line-height:1.6;">Select a verified TrustBridge middle-man to oversee and host your transaction. All middle-men are identity-verified and trained in dispute resolution.</p>
+        <div class="form-group" style="margin-bottom:0;">
+          <label>Select a Verified Middle-Man</label>
+          <div style="position:relative;">
+            <!-- Hidden native select for form value only -->
+            <select id="middleman-select" style="display:none;" onchange="updateMiddlemanPreview(this)">
+              <option value="">— Select a middle-man —</option>
+              <option value="Cold">Cold</option>
+              <option value="Fame">Fame</option>
+              <option value="Tall">Tall</option>
+              <option value="Grin">Grin</option>
+              <option value="Poor">Poor</option>
+              <option value="Hand">Hand</option>
+              <option value="Poem">Poem</option>
+              <option value="Wine">Wine</option>
+              <option value="Torn">Torn</option>
+              <option value="Underground">Underground</option>
+            </select>
+
+            <!-- Custom dropdown UI -->
+            <div id="mm-dropdown-wrap" style="position:relative;user-select:none;">
+              <div id="mm-trigger" onclick="toggleMmDropdown()" style="
+                display:flex;align-items:center;justify-content:space-between;
+                width:100%;padding:0.85rem 1rem;
+                border:1.5px solid var(--light-gray);border-radius:10px;
+                font-family:'DM Sans',sans-serif;font-size:0.95rem;
+                color:var(--text-light);background:white;cursor:pointer;
+                transition:border-color 0.2s,box-shadow 0.2s;
+              ">
+                <span id="mm-trigger-label">— Select a middle-man —</span>
+                <svg id="mm-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-light);flex-shrink:0;transition:transform 0.2s;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+              </div>
+              <div id="mm-list" style="
+                display:none;position:absolute;top:calc(100% + 6px);left:0;right:0;
+                background:white;border:1.5px solid var(--light-gray);border-radius:10px;
+                box-shadow:0 8px 32px rgba(13,43,82,0.12);z-index:200;overflow:hidden;
+              "></div>
+            </div>
+          </div>
+
+          <!-- Preview card shown after selection -->
+          <div id="middleman-preview" style="
+            display:none;
+            margin-top:1rem;
+            background:linear-gradient(135deg, rgba(36,119,212,0.06), rgba(14,168,168,0.06));
+            border:1.5px solid rgba(36,119,212,0.2);
+            border-radius:10px;
+            padding:0.9rem 1.1rem;
+            display:none;
+            align-items:center;
+            gap:12px;
+          ">
+            <div style="
+              width:42px;height:42px;flex-shrink:0;
+              background:linear-gradient(135deg,var(--blue-bright),var(--teal));
+              border-radius:50%;
+              display:flex;align-items:center;justify-content:center;
+              font-size:1.1rem;font-weight:700;color:white;
+              font-family:'Playfair Display',serif;
+            " id="middleman-avatar">—</div>
+            <div style="flex:1;">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:0.95rem;font-weight:700;color:var(--navy);" id="middleman-name">—</span>
+                <span style="
+                  display:inline-flex;align-items:center;gap:3px;
+                  background:rgba(14,168,168,0.12);
+                  border:1px solid rgba(14,168,168,0.3);
+                  border-radius:50px;
+                  padding:2px 8px;
+                  font-size:0.68rem;font-weight:700;color:var(--teal);
+                  text-transform:uppercase;letter-spacing:0.06em;
+                ">✔ Verified</span>
+              </div>
+              <div style="font-size:0.78rem;color:var(--text-light);margin-top:2px;">TrustBridge Certified Middle-Man · Identity Verified</div>
+            </div>
+          </div>
+          <span class="field-error" id="middleman-error">Please select a middle-man to host your transaction.</span>
+        </div>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn-back" onclick="prevStep(3)">← Back</button>
+        <button class="btn-next" onclick="nextStep(3)">Continue →</button>
+      </div>
+    </div>
+
+    <!-- ═══ STEP 4: REVIEW & SUBMIT ═══ -->
+    <div class="step-panel" id="panel-4">
+      <h1 class="panel-title">Review Your Transaction</h1>
+      <p class="panel-sub">Please review all details carefully before submitting. Once submitted, your Transaction ID will be generated and you can track progress in the dashboard.</p>
+
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">🏷️</div>
+          Transaction Summary
+        </div>
+        <div class="review-grid" id="reviewGrid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <div class="card-title-icon">📄</div>
+          TrustBridge Escrow Agreement
+        </div>
+        <div class="agreement-box">
+          <h4>TrustBridge Escrow Service Agreement</h4>
+          <p>By submitting this transaction, you ("the Initiating Party") agree to the following terms and conditions set forth by TrustBridge Financial Services, Inc. ("TrustBridge").</p><br>
+          <p><strong>1. Role of TrustBridge.</strong> TrustBridge acts solely as a neutral third-party escrow holder. TrustBridge does not take ownership of, or any interest in, the goods, services, or funds involved in any transaction.</p><br>
+          <p><strong>2. Fund Handling.</strong> All funds held in escrow are maintained in segregated, FDIC-insured accounts. TrustBridge will not release funds until the conditions of the transaction, as agreed to by both parties, are fulfilled or a dispute is resolved.</p><br>
+          <p><strong>3. Inspection Period.</strong> The buyer has the agreed inspection period to inspect goods or services. If no action is taken before the inspection period expires, funds will automatically be released to the seller.</p><br>
+          <p><strong>4. Dispute Resolution.</strong> In the event of a dispute, TrustBridge's professional dispute resolution team will review submitted evidence from both parties and issue a binding determination within 10 business days.</p><br>
+          <p><strong>5. Cancellation.</strong> Either party may request a cancellation prior to the seller delivering. Both parties must agree to cancel. If the buyer initiates a cancellation after delivery, the normal dispute process applies.</p><br>
+          <p><strong>6. Fees.</strong> Fees are as disclosed at the time of transaction creation and are non-refundable once a transaction is initiated, except in cases of platform error.</p>
+        </div>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="agree-terms" />
+          <label for="agree-terms">I have read and agree to the <a href="#">TrustBridge Escrow Agreement</a> and <a href="#">Terms of Service</a>.</label>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="agree-privacy" />
+          <label for="agree-privacy">I agree to the <a href="#">Privacy Policy</a> and consent to my information being used for the purpose of this transaction.</label>
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="agree-accurate" />
+          <label for="agree-accurate">I confirm that all information I have provided is accurate and that I am authorized to initiate this transaction.</label>
+        </div>
+        <p class="field-error" id="agree-error">Please accept all agreements to continue.</p>
+      </div>
+
+      <div class="nav-buttons">
+        <button class="btn-back" onclick="prevStep(4)">← Back</button>
+        <button class="btn-submit" onclick="submitTransaction()">
+          🔒 Submit Transaction
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══ STEP 5: PAYMENT INSTRUCTIONS ═══ -->
+    <div class="step-panel" id="panel-5">
+      <div class="success-panel">
+
+        <div class="success-icon">🔒</div>
+        <h1 class="success-title">Send Your Payment</h1>
+        <p class="success-sub">
+          Your transaction has been created. Choose a cryptocurrency below and send the exact amount to the corresponding TrustBridge escrow address. Funds will be held securely until both parties fulfil the transaction conditions.
+        </p>
+
+        <!-- TX ID -->
+        <div class="tx-id-box">
+          <div>
+            <div class="tx-id-label">Transaction ID — Save this to check your dashboard</div>
+            <div class="tx-id-value" id="generatedTxId">TBR-0000000</div>
+          </div>
+          <div class="copy-btn" onclick="copyTxId()">Copy</div>
+        </div>
+
+        <!-- ── COUNTDOWN TIMER ── -->
+        <div id="paymentTimer" style="
+          background: linear-gradient(135deg, #e53e3e, #c0392b);
+          border-radius: 14px;
+          padding: 1.1rem 1.5rem;
+          max-width: 560px;
+          margin: 0 auto 1.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+          box-shadow: 0 4px 20px rgba(229,62,62,0.3);
+        ">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:1.4rem;">⏱️</span>
+            <div>
+              <div style="font-size:0.7rem;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px;">Time to Send Payment</div>
+              <div style="font-size:0.78rem;color:rgba(255,255,255,0.6);line-height:1.4;">Send funds within the window to secure your transaction</div>
+            </div>
+          </div>
+          <div id="timerDisplay" style="
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            flex-shrink: 0;
+          ">3:00</div>
+        </div>
+        <div id="timerExpired" style="
+          display:none;
+          background: rgba(229,62,62,0.08);
+          border: 1px solid rgba(229,62,62,0.3);
+          border-radius:10px;
+          padding:0.9rem 1.2rem;
+          max-width:560px;
+          margin:0 auto 1.5rem;
+          font-size:0.85rem;
+          color:#c0392b;
+          text-align:center;
+          font-weight:600;
+        ">⚠️ Time window expired. If you still plan to send, please contact support with your Transaction ID.</div>
+
+        <!-- Payment card -->
+        <div class="card" style="text-align:left; max-width:560px; margin:0 auto 1.5rem;">
+
+          <!-- Critical warning -->
+          <div style="
+            background: rgba(229,62,62,0.07);
+            border: 1px solid rgba(229,62,62,0.25);
+            border-radius: 10px;
+            padding: 0.9rem 1.1rem;
+            display: flex; gap: 10px; align-items: flex-start;
+            margin-bottom: 1.5rem;
+          ">
+            <span style="font-size:1rem; flex-shrink:0;">🚨</span>
+            <p style="font-size:0.8rem; color:#8b1a1a; line-height:1.6; margin:0;">
+              <strong>Only send the matching cryptocurrency to each address.</strong> Sending BTC to an ETH address, or ETH to a SOL address, will result in <strong>permanent, unrecoverable loss of funds.</strong> Always double-check you are using the correct address for the coin you are sending.
+            </p>
+          </div>
+
+          <!-- Amount display -->
+          <div style="
+            background: linear-gradient(135deg, var(--navy), var(--navy-mid));
+            border-radius:12px; padding:1.4rem 1.5rem;
+            margin-bottom:1.5rem;
+          ">
+            <div style="font-size:0.72rem; font-weight:700; color:rgba(255,255,255,0.45); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.5rem;">
+              Total Amount Due
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:1rem;">
+              <div id="paymentAmountDisplay" style="font-family:'Playfair Display',serif; font-size:2rem; font-weight:700; color:white; word-break:break-all;">
+                0.00
+              </div>
+            </div>
+            <div style="font-size:0.75rem; color:rgba(255,255,255,0.4); margin-top:0.4rem;">
+              Includes $250.00 escrow fee. Send this exact USD-equivalent amount in your chosen crypto — do not round.
+            </div>
+          </div>
+
+          <!-- Crypto address cards -->
+          <div style="font-size:0.82rem; font-weight:700; color:var(--navy); margin-bottom:0.9rem;">Choose Your Cryptocurrency & Copy the Correct Address</div>
+
+          <!-- BTC -->
+          <div style="
+            border: 2px solid #f7931a33;
+            border-radius: 12px;
+            padding: 1.1rem 1.2rem;
+            margin-bottom: 0.9rem;
+            background: #fffbf5;
+          ">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.8rem;">
+              <span style="font-size:1.5rem;">₿</span>
+              <div>
+                <div style="font-size:0.95rem;font-weight:700;color:#b45309;">Bitcoin (BTC)</div>
+                <div style="font-size:0.72rem;color:#92400e;">Only send BTC to this address. Do not send any other coin here.</div>
+              </div>
+            </div>
+            <div style="
+              background:white; border:1.5px solid #f7931a44;
+              border-radius:8px; padding:0.8rem 1rem;
+              display:flex; align-items:center; justify-content:space-between; gap:0.8rem;
+            ">
+              <code style="font-size:0.72rem;color:#1a1a1a;word-break:break-all;font-family:monospace;line-height:1.5;flex:1;">bc1qqgu5qy8wngq5c45qfkmww5xvu3levcqdj9vkme</code>
+              <button onclick="copyAddr('bc1qqgu5qy8wngq5c45qfkmww5xvu3levcqdj9vkme', this)" style="
+                background:#f7931a;border:none;border-radius:6px;color:white;
+                font-size:0.75rem;font-weight:700;padding:0.45rem 0.85rem;
+                cursor:pointer;white-space:nowrap;flex-shrink:0;transition:opacity 0.2s;
+              " onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">Copy BTC</button>
+            </div>
+          </div>
+
+          <!-- ETH -->
+          <div style="
+            border: 2px solid #627eea33;
+            border-radius: 12px;
+            padding: 1.1rem 1.2rem;
+            margin-bottom: 0.9rem;
+            background: #f7f8ff;
+          ">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.8rem;">
+              <span style="font-size:1.5rem;">⟠</span>
+              <div>
+                <div style="font-size:0.95rem;font-weight:700;color:#3730a3;">Ethereum (ETH)</div>
+                <div style="font-size:0.72rem;color:#4338ca;">Only send ETH on the Ethereum mainnet to this address. Do not send ERC-20 tokens or use another network.</div>
+              </div>
+            </div>
+            <div style="
+              background:white; border:1.5px solid #627eea44;
+              border-radius:8px; padding:0.8rem 1rem;
+              display:flex; align-items:center; justify-content:space-between; gap:0.8rem;
+            ">
+              <code style="font-size:0.72rem;color:#1a1a1a;word-break:break-all;font-family:monospace;line-height:1.5;flex:1;">0xEa1F47aB0b93E2058578A60457F975cAC20Aa890</code>
+              <button onclick="copyAddr('0xEa1F47aB0b93E2058578A60457F975cAC20Aa890', this)" style="
+                background:#627eea;border:none;border-radius:6px;color:white;
+                font-size:0.75rem;font-weight:700;padding:0.45rem 0.85rem;
+                cursor:pointer;white-space:nowrap;flex-shrink:0;transition:opacity 0.2s;
+              " onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">Copy ETH</button>
+            </div>
+          </div>
+
+          <!-- SOL -->
+          <div style="
+            border: 2px solid #9945ff33;
+            border-radius: 12px;
+            padding: 1.1rem 1.2rem;
+            margin-bottom: 0.5rem;
+            background: #fdf7ff;
+          ">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:0.8rem;">
+              <span style="font-size:1.5rem;">◎</span>
+              <div>
+                <div style="font-size:0.95rem;font-weight:700;color:#6b21a8;">Solana (SOL)</div>
+                <div style="font-size:0.72rem;color:#7e22ce;">Only send native SOL to this address. Do not send SPL tokens (USDC, USDT, etc.) here.</div>
+              </div>
+            </div>
+            <div style="
+              background:white; border:1.5px solid #9945ff44;
+              border-radius:8px; padding:0.8rem 1rem;
+              display:flex; align-items:center; justify-content:space-between; gap:0.8rem;
+            ">
+              <code style="font-size:0.72rem;color:#1a1a1a;word-break:break-all;font-family:monospace;line-height:1.5;flex:1;">A7R9bY8ufHM5eUa9TUuiommJvgcsuuiTHha7ZKD3RVws</code>
+              <button onclick="copyAddr('A7R9bY8ufHM5eUa9TUuiommJvgcsuuiTHha7ZKD3RVws', this)" style="
+                background:#9945ff;border:none;border-radius:6px;color:white;
+                font-size:0.75rem;font-weight:700;padding:0.45rem 0.85rem;
+                cursor:pointer;white-space:nowrap;flex-shrink:0;transition:opacity 0.2s;
+              " onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">Copy SOL</button>
+            </div>
+          </div>
+
+          <div style="font-size:0.74rem;color:var(--text-light);margin-top:0.7rem;line-height:1.6;padding:0.7rem;background:var(--off-white);border-radius:8px;">
+            🔒 Verify the full address in your wallet before confirming. TrustBridge will <strong>never</strong> ask you to send funds to a different address than shown here.
+          </div>
+
+        </div>
+
+        <!-- What Happens Next -->
+        <div class="card" style="text-align:left; max-width:560px; margin:0 auto 2rem;">
+          <div class="card-title"><div class="card-title-icon">📋</div>What Happens After You Send</div>
+          <div class="review-grid">
+            <div class="review-item">
+              <span class="review-key">1. You send crypto</span>
+              <span class="review-val">Transfer the exact USD-equivalent to the correct address for your chosen coin</span>
+            </div>
+            <div class="review-item">
+              <span class="review-key">2. We confirm receipt</span>
+              <span class="review-val">TrustBridge verifies the payment on-chain (usually within minutes)</span>
+            </div>
+            <div class="review-item">
+              <span class="review-key">3. Other party notified</span>
+              <span class="review-val">The seller is notified that funds are secured and to proceed with delivery</span>
+            </div>
+            <div class="review-item">
+              <span class="review-key">4. Inspect & approve</span>
+              <span class="review-val">You have <span id="inspectionSummary">3 days</span> to inspect before funds auto-release</span>
+            </div>
+            <div class="review-item" style="border-bottom:none;">
+              <span class="review-key">5. Funds released</span>
+              <span class="review-val">Once you approve, crypto is released to the seller minus the escrow fee</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="success-actions">
+          <a href="dashboard.html" class="btn-primary-full">Track Your Transaction →</a>
+          <a href="index.html" class="btn-outline">Back to Home</a>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /page-wrap -->
+
+<script>
+  // ── STATE ──
+  const state = {
+    currentStep: 1,
+    maxUnlocked: 1,
+    category: null,
+    amount: 0,
+    currency: 'USD',
+    paymentMethod: '',
+    title: '',
+    description: '',
+    inspection: '3',
+    feePayer: 'buyer',
+    role: 'buyer',
+    myFirst: '', myLast: '', myEmail: '', myPhone: '', myCountry: '', myAccountType: 'individual', myCompany: ''
+  };
+
+  // ── SERVICE TYPE CUSTOM DROPDOWN ──
+  const SVC_LOGOS = {
+    tiktok: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#010101"/><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.02a8.18 8.18 0 004.79 1.53V7.12a4.85 4.85 0 01-1.02-.43z" fill="white"/></svg>`,
+    snapchat: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#FFFC00"/><path d="M12 3c-1.97 0-4.27.87-4.27 4.12v.44c-.5.13-1.36-.08-1.81.3-.22.18-.32.43-.28.68.08.45.63.73 1.14.9.06.02.14.04.18.09.05.08-.01.23-.05.31-.32.66-1.02 1.38-2.3 1.57-.16.02-.28.16-.24.32.08.35.57.62 1.5.8.06.01.1.07.13.13.04.11.04.25.08.41.06.24.24.37.5.37a3.97 3.97 0 00.47-.04c.32-.05.63-.08.97-.08.28 0 .55.03.82.12.51.18.98.55 1.57.95.59.4 1.26.82 2.17.83h.04c.92-.01 1.58-.43 2.17-.83.59-.4 1.06-.77 1.57-.95.27-.09.54-.12.82-.12.34 0 .65.03.97.08.14.02.3.04.47.04.26 0 .44-.13.5-.37.04-.16.04-.3.08-.41.03-.06.07-.12.13-.13.93-.18 1.42-.45 1.5-.8.04-.16-.08-.3-.24-.32-1.28-.19-1.98-.91-2.3-1.57-.04-.08-.1-.23-.05-.31.04-.05.12-.07.18-.09.51-.17 1.06-.45 1.14-.9.04-.25-.06-.5-.28-.68-.45-.38-1.31-.17-1.81-.3v-.44C16.27 3.87 13.97 3 12 3z" fill="#1a1a1a"/></svg>`,
+    instagram: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="ig1" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#f09433"/><stop offset="25%" stop-color="#e6683c"/><stop offset="50%" stop-color="#dc2743"/><stop offset="75%" stop-color="#cc2366"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs><rect width="24" height="24" rx="5" fill="url(#ig1)"/><rect x="4.5" y="4.5" width="15" height="15" rx="4.5" stroke="white" stroke-width="1.5" fill="none"/><circle cx="12" cy="12" r="3.8" stroke="white" stroke-width="1.5" fill="none"/><circle cx="17" cy="7" r="1.1" fill="white"/></svg>`,
+    x: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#000"/><path d="M17.75 3.5h2.9l-6.35 7.26 7.47 9.87h-5.85l-4.59-6-5.25 6H3.2l6.8-7.77L2.9 3.5h6l4.14 5.48 4.71-5.48zm-1.02 15.36h1.61L7.41 5.15H5.69l11.04 13.71z" fill="white"/></svg>`,
+    youtube: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#FF0000"/><path d="M21.08 8.33S20.86 6.84 20.22 6.19c-.73-.76-1.55-.77-1.92-.81C15.52 5.16 12 5.16 12 5.16s-3.52 0-6.3.22c-.37.04-1.19.05-1.92.81-.64.65-.86 2.14-.86 2.14S2.7 10.06 2.7 11.8v1.63c0 1.74.22 3.47.22 3.47s.22 1.49.86 2.14c.73.76 1.69.74 2.12.82C7.3 19.05 12 19.05 12 19.05s3.52 0 6.3-.23c.37-.04 1.19-.06 1.92-.82.64-.65.86-2.14.86-2.14s.22-1.73.22-3.47V11.8c0-1.74-.22-3.47-.22-3.47zM10.1 14.73V9.5l5.19 2.62-5.19 2.61z" fill="white"/></svg>`,
+    facebook: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#1877F2"/><path d="M16.5 4.5h-2.25C12.84 4.5 12 5.34 12 6.75v1.75h-2v2.5h2V19h3v-8h2l.5-2.5H15V7c0-.41.34-.75.75-.75H16.5V4.5z" fill="white"/></svg>`,
+    linkedin: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#0A66C2"/><path d="M7.5 10H5v9h2.5v-9zM6.25 8.75a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM19 19h-2.5v-4.5c0-1.1-.4-1.85-1.38-1.85-.75 0-1.2.5-1.4 1-.07.17-.09.42-.09.67V19H11v-9h2.4v1.23h.03c.46-.78 1.26-1.5 2.57-1.5C17.96 9.73 19 11.1 19 14.08V19z" fill="white"/></svg>`,
+    pinterest: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#E60023"/><path d="M12 2.5C6.76 2.5 2.5 6.76 2.5 12c0 3.97 2.44 7.38 5.94 8.77-.08-.74-.16-1.87.03-2.68.17-.73 1.14-4.83 1.14-4.83s-.29-.58-.29-1.44c0-1.35.79-2.36 1.77-2.36.83 0 1.24.62 1.24 1.37 0 .83-.53 2.08-.8 3.24-.23.97.48 1.76 1.44 1.76 1.73 0 3.06-1.82 3.06-4.45 0-2.33-1.68-3.96-4.07-3.96-2.77 0-4.4 2.08-4.4 4.22 0 .84.32 1.73.72 2.22a.28.28 0 01.07.28c-.07.3-.24.97-.27 1.1-.04.18-.14.22-.33.13-1.22-.57-1.98-2.35-1.98-3.78 0-3.08 2.24-5.91 6.45-5.91 3.39 0 6.02 2.42 6.02 5.64 0 3.36-2.12 6.07-5.07 6.07-.99 0-1.92-.51-2.24-1.12l-.61 2.32c-.22.85-.81 1.91-1.21 2.56.91.28 1.88.43 2.88.43 5.24 0 9.5-4.26 9.5-9.5S17.24 2.5 12 2.5z" fill="white"/></svg>`,
+    generic: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gn1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#2477d4"/><stop offset="100%" stop-color="#0ea8a8"/></linearGradient></defs><rect width="24" height="24" rx="5" fill="url(#gn1)"/><circle cx="12" cy="12" r="4.5" stroke="white" stroke-width="1.5" fill="none"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>`
+  };
+
+  const SVC_GROUPS = [
+    { label: 'TikTok', logo: 'tiktok', items: [
+      'TikTok Verification', 'TikTok Account Unban', 'TikTok Followers', 'TikTok Strike Wipe', 'TikTok Shadowban'
+    ]},
+    { label: 'Snapchat', logo: 'snapchat', items: [
+      'Snapchat Verification', 'Snapchat Views', 'Snapchat Spotlight Rewards Program', 'Snapchat Creator Rewards Program'
+    ]},
+    { label: 'Instagram', logo: 'instagram', items: [
+      'Instagram Verification', 'Instagram Unban', 'Instagram Strike Wipe', 'Instagram Shadowban'
+    ]},
+    { label: 'X (Twitter)', logo: 'x', items: [
+      'X Unban', 'X Shadowban', 'X Business Verification'
+    ]},
+    { label: 'YouTube', logo: 'youtube', items: [
+      'YouTube Monetization', 'YouTube Views', 'YouTube Verification'
+    ]},
+    { label: 'Facebook', logo: 'facebook', items: [
+      'Facebook Verification', 'Facebook Video Views', 'Facebook Followers'
+    ]},
+    { label: 'LinkedIn', logo: 'linkedin', items: [
+      'LinkedIn Verification'
+    ]},
+    { label: 'Pinterest', logo: 'pinterest', items: [
+      'Pinterest Verification', 'Pinterest Monetization Program'
+    ]},
+    { label: 'Other Services', logo: 'generic', items: [
+      'Rare Username Claim/Swap', 'Domain Claim/Swap', 'Account Growth (Any Platform)', 'Press Articles', 'Other'
+    ]}
+  ];
+
+  // Map each service value → logo key
+  const SVC_LOGO_MAP = {};
+  SVC_GROUPS.forEach(g => g.items.forEach(item => { SVC_LOGO_MAP[item] = g.logo; }));
+
+  function logoHTML(key) {
+    return `<span class="svc-logo">${SVC_LOGOS[key] || SVC_LOGOS.generic}</span>`;
+  }
+
+  function buildSvcDropdown() {
+    const panel = document.getElementById('svc-panel');
+    panel.innerHTML = SVC_GROUPS.map(g => `
+      <div class="svc-group-label">${g.label}</div>
+      ${g.items.map(item => `
+        <div class="svc-option" data-value="${item}" onclick="selectSvcOption('${item.replace(/'/g,"\\'")}')">
+          ${logoHTML(g.logo)}
+          <span>${item}</span>
+        </div>
+      `).join('')}
+    `).join('');
+  }
+
+  let _svcOpen = false;
+
+  function toggleSvcDropdown() {
+    _svcOpen = !_svcOpen;
+    const panel = document.getElementById('svc-panel');
+    const chevron = document.getElementById('svc-chevron');
+    const trigger = document.getElementById('svc-trigger');
+    panel.style.display = _svcOpen ? 'block' : 'none';
+    chevron.style.transform = _svcOpen ? 'rotate(180deg)' : '';
+    trigger.style.borderColor = _svcOpen ? '#2477d4' : '#e8edf5';
+  }
+
+  function selectSvcOption(value) {
+    // Update hidden inputs
+    document.getElementById('tx-service-type').value = value;
+    // Also create a hidden tx-title if not already there (for services mode, title = service name)
+    let titleEl = document.getElementById('tx-title');
+    if (!titleEl) {
+      titleEl = document.createElement('input');
+      titleEl.type = 'hidden';
+      titleEl.id = 'tx-title';
+      document.body.appendChild(titleEl);
+    }
+    titleEl.value = value;
+
+    // Update trigger display
+    const logoKey = SVC_LOGO_MAP[value] || 'generic';
+    const triggerIcon = document.getElementById('svc-trigger-icon');
+    const triggerLabel = document.getElementById('svc-trigger-label');
+    triggerIcon.innerHTML = SVC_LOGOS[logoKey];
+    triggerIcon.style.display = 'flex';
+    triggerLabel.textContent = value;
+    triggerLabel.style.color = '#0d1f3c';
+    triggerLabel.style.fontWeight = '500';
+
+    // Mark selected in panel
+    document.querySelectorAll('.svc-option').forEach(o => {
+      o.classList.toggle('selected', o.dataset.value === value);
+    });
+
+    // Close dropdown
+    _svcOpen = false;
+    document.getElementById('svc-panel').style.display = 'none';
+    document.getElementById('svc-chevron').style.transform = '';
+    document.getElementById('svc-trigger').style.borderColor = '#e8edf5';
+
+    // Show/hide "Other" description box
+    document.getElementById('other-desc-row').style.display = value === 'Other' ? '' : 'none';
+    if (value === 'Other') document.getElementById('tx-desc-other').style.borderColor = '';
+
+    // Clear validation error
+    hideError('service-type-error', null);
+  }
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!document.getElementById('svc-dropdown').contains(e.target)) {
+      if (_svcOpen) {
+        _svcOpen = false;
+        document.getElementById('svc-panel').style.display = 'none';
+        document.getElementById('svc-chevron').style.transform = '';
+        document.getElementById('svc-trigger').style.borderColor = '#e8edf5';
+      }
+    }
+  });
+
+  // ── CATEGORY SELECTION ──
+  function selectCategory(option) {
+    document.querySelectorAll('.cat-option').forEach(o => o.classList.remove('selected'));
+    option.classList.add('selected');
+    state.category = option.dataset.value;
+    document.getElementById('cat-error').classList.remove('show');
+
+    // Toggle description section based on category
+    const isServices = state.category === 'services';
+    document.getElementById('desc-standard').style.display = isServices ? 'none' : '';
+    document.getElementById('desc-services').style.display = isServices ? '' : 'none';
+
+    // Reset service type if switching away from services
+    if (!isServices) {
+      document.getElementById('tx-service-type').value = '';
+      document.getElementById('svc-trigger-label').textContent = '— Choose a service —';
+      document.getElementById('svc-trigger-icon').style.display = 'none';
+      document.getElementById('other-desc-row').style.display = 'none';
+    }
+  }
+
+  document.getElementById('categoryGrid').addEventListener('click', function(e) {
+    const option = e.target.closest('.cat-option');
+    if (option) selectCategory(option);
+  });
+
+  // ── INSPECTION SELECTION ──
+  function selectInspection(el) {
+    document.querySelectorAll('.inspection-pill').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+    state.inspection = el.dataset.value;
+  }
+
+  // ── FEE PAYER ──
+  function selectFeePayer(el) {
+    document.querySelectorAll('.fee-split-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    state.feePayer = el.dataset.value;
+    updateFee();
+  }
+
+  // ── MIDDLEMAN CUSTOM DROPDOWN ──
+  const middlemen = ['Cold','Fame','Tall','Grin','Poor','Hand','Poem','Wine','Torn','Underground'];
+
+  // SVG verified badge — same blue as site
+  function verifiedBadge() {
+    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;margin-left:6px;">
+      <path d="M12 2L14.09 8.26L21 9.27L16.5 13.64L17.82 20.54L12 17.27L6.18 20.54L7.5 13.64L3 9.27L9.91 8.26L12 2Z" fill="#2477d4" stroke="#2477d4" stroke-width="0.5"/>
+      <path d="M9 12L11 14L15 10" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>`;
+  }
+
+  function buildMmList() {
+    const list = document.getElementById('mm-list');
+    list.innerHTML = middlemen.map(name => `
+      <div onclick="selectMiddleman('${name}')" style="
+        display:flex;align-items:center;justify-content:space-between;
+        padding:0.75rem 1rem;cursor:pointer;
+        transition:background 0.15s;font-size:0.92rem;font-weight:500;color:var(--navy);
+        border-bottom:1px solid var(--light-gray);
+      "
+      onmouseover="this.style.background='#f0f5ff'"
+      onmouseout="this.style.background=''"
+      id="mm-opt-${name}">
+        <span>${name}</span>
+        ${verifiedBadge()}
+      </div>
+    `).join('').replace(/border-bottom:1px solid var\(--light-gray\);\s*">\s*<span>Underground/, 'border-bottom:none;">\n        <span>Underground');
+  }
+
+  function toggleMmDropdown() {
+    const list = document.getElementById('mm-list');
+    const chevron = document.getElementById('mm-chevron');
+    const trigger = document.getElementById('mm-trigger');
+    const open = list.style.display === 'block';
+    list.style.display = open ? 'none' : 'block';
+    chevron.style.transform = open ? '' : 'rotate(180deg)';
+    trigger.style.borderColor = open ? 'var(--light-gray)' : 'var(--blue-bright)';
+    trigger.style.boxShadow = open ? 'none' : '0 0 0 3px rgba(36,119,212,0.12)';
+    if (!open) buildMmList();
+  }
+
+  function selectMiddleman(name) {
+    // Update hidden select
+    const sel = document.getElementById('middleman-select');
+    sel.value = name;
+    // Update trigger label
+    const label = document.getElementById('mm-trigger-label');
+    label.style.color = 'var(--text-dark)';
+    label.style.fontWeight = '600';
+    label.innerHTML = `<span style="display:flex;align-items:center;gap:2px;">${name} ${verifiedBadge()}</span>`;
+    // Close dropdown
+    document.getElementById('mm-list').style.display = 'none';
+    document.getElementById('mm-chevron').style.transform = '';
+    document.getElementById('mm-trigger').style.borderColor = 'var(--blue-bright)';
+    document.getElementById('mm-trigger').style.boxShadow = 'none';
+    // Show preview
+    updateMiddlemanPreview(sel);
+    hideError('middleman-error', null);
+  }
+
+  // Close dropdown if clicking outside
+  document.addEventListener('click', function(e) {
+    const wrap = document.getElementById('mm-dropdown-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      document.getElementById('mm-list').style.display = 'none';
+      document.getElementById('mm-chevron').style.transform = '';
+    }
+  });
+
+  function updateMiddlemanPreview(sel) {
+    const preview = document.getElementById('middleman-preview');
+    const avatar  = document.getElementById('middleman-avatar');
+    const nameEl  = document.getElementById('middleman-name');
+    if (!sel.value) { preview.style.display = 'none'; return; }
+    avatar.textContent = sel.value.charAt(0).toUpperCase();
+    nameEl.textContent = sel.value;
+    preview.style.display = 'flex';
+  }
+
+  // ── ROLE SELECTION ──
+  function selectRole(el) {
+    document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    state.role = el.dataset.value;
+  }
+
+  // ── ACCOUNT TYPE (show/hide company) ──
+  document.getElementById('my-account-type').addEventListener('change', function() {
+    document.getElementById('company-row').style.display = this.value === 'business' ? 'flex' : 'none';
+  });
+
+  // ── FEE CALCULATION ──
+  const ESCROW_FEE = 250;
+
+  function updateFee() {
+    const amt = parseFloat(document.getElementById('amount').value) || 0;
+    state.amount = amt;
+    const sym = getSymbol(document.getElementById('currency').value);
+
+    const method = document.getElementById('payment-method').value;
+    let procFee = 0;
+    if (method === 'card') procFee = amt * 0.029 + 0.30;
+    else if (method === 'wire') procFee = 30;
+    else if (method === 'crypto') procFee = amt * 0.01;
+
+    const total = amt + ESCROW_FEE + procFee;
+
+    document.getElementById('fee-amount-display').textContent = sym + fmt(amt);
+    document.getElementById('fee-escrow-display').textContent = sym + fmt(ESCROW_FEE);
+    document.getElementById('fee-processing-display').textContent = procFee ? sym + fmt(procFee) : 'Free';
+    document.getElementById('fee-total-display').textContent = sym + fmt(total);
+  }
+
+  function getSymbol(code) {
+    const map = { USD:'$', CAD:'CA$', GBP:'£', EUR:'€', AUD:'A$' };
+    return map[code] || '$';
+  }
+  function fmt(n) { return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+
+  document.getElementById('currency').addEventListener('change', updateFee);
+  document.getElementById('payment-method').addEventListener('change', updateFee);
+
+  // ── STEP NAVIGATION ──
+  function goToStep(n) {
+    if (n > state.maxUnlocked) return;
+    showStep(n);
+  }
+
+  function nextStep(from) {
+    if (!await validateStep(from)) return;
+    state.maxUnlocked = Math.max(state.maxUnlocked, from + 1);
+    if (from === 3) buildReview();
+    showStep(from + 1);
+  }
+
+  function prevStep(from) {
+    showStep(from - 1);
+  }
+
+  function showStep(n) {
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + n).classList.add('active');
+
+    document.querySelectorAll('.step-tab').forEach(t => {
+      const s = parseInt(t.dataset.step);
+      t.classList.remove('active', 'done', 'locked');
+      if (s < n) t.classList.add('done');
+      else if (s === n) t.classList.add('active');
+      else if (s <= state.maxUnlocked) t.classList.remove('locked');
+      else t.classList.add('locked');
+    });
+
+    document.querySelectorAll('.step-tab').forEach(t => {
+      const s = parseInt(t.dataset.step);
+      const bubble = t.querySelector('.step-bubble');
+      bubble.textContent = s < n ? '✓' : s;
+    });
+
+    state.currentStep = n;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── VALIDATION ──
+  async function validateStep(step) {
+    let ok = true;
+
+    if (step === 1) {
+      if (!state.category) {
+        document.getElementById('cat-error').classList.add('show');
+        ok = false;
+      }
+    }
+
+    if (step === 2) {
+      const amt = parseFloat(document.getElementById('amount').value);
+      if (!amt || amt <= 0) {
+        showError('amount-error', 'amount'); ok = false;
+      } else { hideError('amount-error', 'amount'); }
+
+      if (!document.getElementById('payment-method').value) {
+        showError('payment-error', 'payment-method'); ok = false;
+      } else { hideError('payment-error', 'payment-method'); }
+
+      if (state.category === 'services') {
+        // Services mode: validate service type dropdown
+        const svcType = document.getElementById('tx-service-type').value;
+        if (!svcType) {
+          document.getElementById('service-type-error').classList.add('show');
+          document.getElementById('svc-trigger').style.borderColor = 'var(--red)';
+          ok = false;
+        } else {
+          document.getElementById('service-type-error').classList.remove('show');
+          document.getElementById('svc-trigger').style.borderColor = '#e8edf5';
+          if (svcType === 'Other') {
+            const otherDesc = document.getElementById('tx-desc-other').value.trim();
+            if (!otherDesc) {
+              document.getElementById('tx-desc-other').style.borderColor = 'var(--red)';
+              ok = false;
+            } else {
+              document.getElementById('tx-desc-other').style.borderColor = '';
+            }
+          }
+        }
+      } else {
+        // Standard mode: validate title field
+        if (!document.getElementById('tx-title').value.trim()) {
+          showError('title-error', 'tx-title'); ok = false;
+        } else { hideError('title-error', 'tx-title'); }
+      }
+    }
+
+    if (step === 3) {
+      const fields = [
+        { id: 'my-first', err: 'my-first-error' },
+        { id: 'my-last', err: 'my-last-error' },
+      ];
+      fields.forEach(f => {
+        const val = document.getElementById(f.id).value.trim();
+        if (!val) { showError(f.err, f.id); ok = false; }
+        else { hideError(f.err, f.id); }
+      });
+
+      // Validate middleman selection
+      const mm = document.getElementById('middleman-select').value;
+      if (!mm) {
+        showError('middleman-error', 'middleman-select'); ok = false;
+      } else {
+        hideError('middleman-error', 'middleman-select');
+      }
+      const cpInput = document.getElementById('counterparty-username').value.trim();
+      const cpStatus = document.getElementById('counterparty-status');
+      const currentUser = TBAuth.getUser();
+      if (!cpInput) {
+        document.getElementById('counterparty-error').textContent = 'Please enter the other party\'s username.';
+        showError('counterparty-error', 'counterparty-username'); ok = false;
+        cpStatus.textContent = '';
+      } else if (currentUser && cpInput.toLowerCase() === currentUser.username.toLowerCase()) {
+        document.getElementById('counterparty-error').textContent = 'You cannot invite yourself.';
+        showError('counterparty-error', 'counterparty-username'); ok = false;
+      } else {
+        // Check username via API
+        try {
+          const checkRes = await fetch('/api/check-username?username=' + encodeURIComponent(cpInput));
+          const checkData = await checkRes.json();
+          if (checkData.available) {
+            document.getElementById('counterparty-error').textContent = 'Username not found on TrustBridge. They must have an account to be invited.';
+            showError('counterparty-error', 'counterparty-username'); ok = false;
+            cpStatus.innerHTML = '<span style="color:#e53e3e;">✗ No TrustBridge account found for this username.</span>';
+          } else {
+            hideError('counterparty-error', 'counterparty-username');
+            document.getElementById('counterparty-error').textContent = 'Please enter the other party\'s username.';
+            cpStatus.innerHTML = '<span style="color:#27a85e;font-weight:600;">✓ Username found on TrustBridge</span>';
+          }
+        } catch(e) {
+          // Network error - allow to proceed
+          hideError('counterparty-error', 'counterparty-username');
+        }
+      }
+    }
+
+    return ok;
+  }
+
+  function showError(errId, inputId) {
+    document.getElementById(errId).classList.add('show');
+    if (inputId) document.getElementById(inputId)?.classList.add('error');
+  }
+  function hideError(errId, inputId) {
+    document.getElementById(errId).classList.remove('show');
+    if (inputId) document.getElementById(inputId)?.classList.remove('error');
+  }
+
+  // ── BUILD REVIEW ──
+  function buildReview() {
+    const categoryLabels = {
+      domain:'Domain Name', 'real-estate':'Real Estate', vehicle:'Motor Vehicle',
+      tech:'Tech / Software', luxury:'Luxury Goods', business:'Business Sale',
+      digital:'Digital Assets', services:'Services'
+    };
+    const paymentLabels = {
+      wire:'Wire Transfer', ach:'ACH / Bank Transfer', card:'Credit / Debit Card', crypto:'Cryptocurrency'
+    };
+    const feePayerLabels = { buyer:'Buyer Pays', seller:'Seller Pays', split:'Split 50/50' };
+    const sym = getSymbol(document.getElementById('currency').value);
+    const amt = parseFloat(document.getElementById('amount').value) || 0;
+
+    const rows = [
+      { k: 'Category', v: categoryLabels[state.category] || state.category, step: 1 },
+      { k: 'Transaction Title', v: state.category === 'services' ? document.getElementById('tx-service-type').value : document.getElementById('tx-title').value, step: 2 },
+      ...(state.category === 'services' ? [{ k: 'Service Type', v: document.getElementById('tx-service-type').value + (document.getElementById('tx-service-type').value === 'Other' ? ': ' + (document.getElementById('tx-desc-other').value || '') : ''), step: 2 }] : []),
+      { k: 'Amount', v: sym + fmt(amt) + ' ' + document.getElementById('currency').value, step: 2 },
+      { k: 'Escrow Fee', v: '$250.00 USD (flat)', step: 2 },
+      { k: 'Payment Method', v: paymentLabels[document.getElementById('payment-method').value] || '—', step: 2 },
+      { k: 'Inspection Period', v: state.inspection + ' day(s)', step: 2 },
+      { k: 'Fee Payer', v: feePayerLabels[state.feePayer], step: 2 },
+      { k: 'Your Role', v: state.role === 'buyer' ? 'Buyer' : 'Seller', step: 3 },
+      { k: 'Your Name', v: document.getElementById('my-first').value + ' ' + document.getElementById('my-last').value, step: 3 },
+      { k: 'Other Party (Username)', v: document.getElementById('counterparty-username').value, step: 3 },
+      { k: 'Middle-Man Host', v: document.getElementById('middleman-select').value ? '✔ ' + document.getElementById('middleman-select').value + ' (Verified)' : '—', step: 3 },
+    ];
+
+    const grid = document.getElementById('reviewGrid');
+    grid.innerHTML = rows.map(r => `
+      <div class="review-item">
+        <span class="review-key">${r.k}</span>
+        <span class="review-val">
+          ${r.v || '<em style="color:var(--text-light)">Not provided</em>'}
+          <span class="review-edit" onclick="goToStep(${r.step})">Edit</span>
+        </span>
+      </div>
+    `).join('');
+  }
+
+  // ── SUBMIT ──
+  function submitTransaction() {
+    const checks = ['agree-terms', 'agree-privacy', 'agree-accurate'];
+    const allChecked = checks.every(id => document.getElementById(id).checked);
+    if (!allChecked) {
+      document.getElementById('agree-error').classList.add('show');
+      return;
+    }
+    document.getElementById('agree-error').classList.remove('show');
+
+    // Generate truly unique transaction ID
+    const txId = 'TBR-' + Date.now().toString().slice(-7) + Math.floor(Math.random() * 100).toString().padStart(2,'0');
+    document.getElementById('generatedTxId').textContent = txId;
+
+    const amt = parseFloat(document.getElementById('amount').value) || 0;
+    const totalUSD = (amt + ESCROW_FEE).toFixed(2);
+    document.getElementById('paymentAmountDisplay').textContent = fmt(parseFloat(totalUSD)) + ' USD';
+
+    window._paymentAmount = totalUSD;
+
+    document.getElementById('inspectionSummary').textContent = state.inspection + ' day(s)';
+
+    // Save transaction to current user's account
+    const categoryLabels = {
+      domain:'Domain Name', 'real-estate':'Real Estate', vehicle:'Motor Vehicle',
+      tech:'Tech / Software', luxury:'Luxury Goods', business:'Business Sale',
+      digital:'Digital Assets', services:'Services'
+    };
+    await TBAuth.saveTransaction(txId, {
+      title: state.category === 'services' ? document.getElementById('tx-service-type').value : document.getElementById('tx-title').value,
+      category: categoryLabels[state.category] || state.category,
+      amount: amt,
+      currency: document.getElementById('currency').value,
+      status: 'Awaiting Payment',
+      role: state.role === 'buyer' ? 'Buyer' : 'Seller',
+      name: document.getElementById('my-first').value + ' ' + document.getElementById('my-last').value,
+      counterparty: document.getElementById('counterparty-username').value,
+      middleman: document.getElementById('middleman-select').value,
+      createdAt: new Date().toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'})
+    });
+
+    document.querySelectorAll('.step-tab').forEach(t => {
+      t.classList.remove('active', 'locked');
+      t.classList.add('done');
+      t.querySelector('.step-bubble').textContent = '✓';
+    });
+
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-5').classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Start the 3-minute payment countdown
+    startPaymentTimer();
+  }
+
+  // ── COPY FUNCTIONS ──
+  function copyTxId() {
+    const id = document.getElementById('generatedTxId').textContent;
+    navigator.clipboard.writeText(id).then(() => {
+      const btn = document.querySelector('.copy-btn');
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = orig, 2000);
+    });
+  }
+
+  function copyAddr(address, btn) {
+    navigator.clipboard.writeText(address).then(() => {
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      btn.style.opacity = '1';
+      setTimeout(() => btn.textContent = orig, 2500);
+    }).catch(() => alert('Could not copy. Please copy the address manually.'));
+  }
+
+  // ── COUNTDOWN TIMER ──
+  let _timerInterval = null;
+
+  function startPaymentTimer() {
+    let secondsLeft = 180; // 3 minutes
+    const display = document.getElementById('timerDisplay');
+    const timerBox = document.getElementById('paymentTimer');
+    const expiredBox = document.getElementById('timerExpired');
+
+    if (_timerInterval) clearInterval(_timerInterval);
+
+    _timerInterval = setInterval(() => {
+      secondsLeft--;
+      const m = Math.floor(secondsLeft / 60);
+      const s = secondsLeft % 60;
+      display.textContent = m + ':' + String(s).padStart(2, '0');
+
+      // Turn orange under 1 min
+      if (secondsLeft <= 60 && secondsLeft > 30) {
+        timerBox.style.background = 'linear-gradient(135deg, #e07b20, #c0620a)';
+        timerBox.style.boxShadow = '0 4px 20px rgba(224,123,32,0.4)';
+      }
+      // Flash red under 30 sec
+      if (secondsLeft <= 30) {
+        timerBox.style.background = 'linear-gradient(135deg, #e53e3e, #9b1c1c)';
+        display.style.animation = 'timerPulse 0.8s infinite';
+      }
+
+      if (secondsLeft <= 0) {
+        clearInterval(_timerInterval);
+        timerBox.style.display = 'none';
+        expiredBox.style.display = 'block';
+      }
+    }, 1000);
+  }
+
+  // ── AUTO-SELECT CATEGORY FROM URL PARAM ──
+  window.addEventListener('DOMContentLoaded', () => {
+    // Build the custom service type dropdown
+    buildSvcDropdown();
+
+    // Require login to use this page
+    await TBAuthUI.init({ requireAuth: true });
+
+    // Auto-fill username from logged-in account
+    const user = TBAuth.getUser();
+    if (user) {
+      // Pre-fill first name with username as a convenience hint
+      document.getElementById('my-first').placeholder = user.username;
+    }
+
+    // Live counterparty username check
+    document.getElementById('counterparty-username').addEventListener('input', function() {
+      const val = this.value.trim();
+      const cpStatus = document.getElementById('counterparty-status');
+      const currentUser = TBAuth.getUser();
+      if (!val) { cpStatus.textContent = ''; return; }
+      if (currentUser && val.toLowerCase() === currentUser.username.toLowerCase()) {
+        cpStatus.innerHTML = '<span style="color:#e53e3e;">✗ You cannot invite yourself.</span>';
+        return;
+      }
+      fetch('/api/check-username?username=' + encodeURIComponent(val))
+        .then(r => r.json())
+        .then(data => {
+          if (!data.available) {
+            cpStatus.innerHTML = '<span style="color:#27a85e;font-weight:600;">✓ Username found on TrustBridge</span>';
+          } else {
+            cpStatus.innerHTML = '<span style="color:#e53e3e;">✗ No TrustBridge account found. The other party must have an account to be invited.</span>';
+          }
+        }).catch(() => { cpStatus.textContent = ''; });
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get('cat');
+    if (cat) {
+      const el = document.querySelector(`.cat-option[data-value="${cat}"]`);
+      if (el) selectCategory(el);
+    }
+  });
+</script>
+</body>
+</html>

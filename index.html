@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><defs><linearGradient id=%22g%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22><stop offset=%220%25%22 stop-color=%22%232477d4%22/><stop offset=%22100%25%22 stop-color=%22%230ea8a8%22/></linearGradient></defs><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22url(%23g)%22/><path d=%22M50 10 L18 24 L18 48 C18 68 32 85 50 91 C68 85 82 68 82 48 L82 24 Z%22 fill=%22white%22/></svg>" />
+  <title>TrustBridge — Secure Transaction Services</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="auth.js"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --navy: #0d2b52;
+      --navy-deep: #071a35;
+      --navy-mid: #163a6e;
+      --blue: #1a5faa;
+      --blue-bright: #2477d4;
+      --teal: #0ea8a8;
+      --white: #ffffff;
+      --off-white: #f4f7fb;
+      --light-gray: #e8edf5;
+      --text-dark: #0d1f3c;
+      --text-mid: #4a5568;
+      --text-light: #8a99b3;
+      --gold: #c99a2e;
+      --green: #27a85e;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-dark);
+      background: var(--white);
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 1000;
+      background: var(--navy-deep);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem;
+      height: 68px;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--blue-bright), var(--teal));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-icon svg { width: 20px; height: 20px; fill: white; }
+    .logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem; font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.01em;
+    }
+    .logo-text span { color: var(--teal); }
+
+    .nav-links {
+      display: flex; align-items: center; gap: 2rem;
+      list-style: none;
+    }
+    .nav-links a {
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      font-size: 0.9rem; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: white; }
+
+    .nav-actions {
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .btn-primary {
+      padding: 0.55rem 1.3rem;
+      background: linear-gradient(135deg, var(--blue-bright), var(--blue));
+      border: none; border-radius: 6px;
+      color: white; font-size: 0.88rem; font-weight: 600;
+      cursor: pointer; text-decoration: none;
+      transition: opacity 0.2s, transform 0.15s;
+      box-shadow: 0 2px 12px rgba(36,119,212,0.4);
+    }
+    .btn-primary:hover { opacity: 0.92; transform: translateY(-1px); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      background: var(--navy-deep);
+      display: flex; align-items: center;
+      position: relative;
+      overflow: hidden;
+      padding-top: 68px;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(26,95,170,0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26,95,170,0.12) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+    }
+    .orb-1 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(36,119,212,0.18) 0%, transparent 70%);
+      top: -100px; right: -100px;
+    }
+    .orb-2 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(14,168,168,0.12) 0%, transparent 70%);
+      bottom: -50px; left: 10%;
+    }
+
+    .hero-inner {
+      position: relative; z-index: 2;
+      max-width: 1200px; margin: 0 auto;
+      padding: 0 2rem;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 4rem; align-items: center;
+      width: 100%;
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(14,168,168,0.15);
+      border: 1px solid rgba(14,168,168,0.3);
+      border-radius: 50px;
+      padding: 6px 16px;
+      font-size: 0.8rem; font-weight: 600;
+      color: var(--teal);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    .hero-badge-dot {
+      width: 6px; height: 6px;
+      background: var(--teal);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.4rem, 4vw, 3.8rem);
+      font-weight: 700;
+      color: white;
+      line-height: 1.12;
+      margin-bottom: 1.5rem;
+    }
+    .hero-title .accent { color: var(--teal); }
+
+    .hero-sub {
+      font-size: 1.05rem; font-weight: 300;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+      max-width: 500px;
+    }
+
+    .hero-ctas {
+      display: flex; gap: 1rem; align-items: center;
+      margin-bottom: 3rem;
+    }
+    .btn-cta-primary {
+      padding: 0.9rem 2rem;
+      background: linear-gradient(135deg, var(--blue-bright), var(--blue));
+      border: none; border-radius: 8px;
+      color: white; font-size: 1rem; font-weight: 600;
+      cursor: pointer; text-decoration: none;
+      box-shadow: 0 4px 24px rgba(36,119,212,0.45);
+      transition: all 0.2s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .btn-cta-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(36,119,212,0.5); }
+    .btn-cta-secondary {
+      padding: 0.9rem 2rem;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 8px;
+      color: rgba(255,255,255,0.85); font-size: 1rem; font-weight: 500;
+      cursor: pointer; text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-cta-secondary:hover { border-color: rgba(255,255,255,0.6); color: white; }
+
+    .hero-stats {
+      display: flex; gap: 2.5rem;
+    }
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem; font-weight: 700;
+      color: white;
+    }
+    .stat-label {
+      font-size: 0.8rem; font-weight: 400;
+      color: rgba(255,255,255,0.45);
+      margin-top: 2px;
+    }
+    .stat-divider {
+      width: 1px; background: rgba(255,255,255,0.12);
+      align-self: stretch;
+    }
+
+    /* Hero Visual */
+    .hero-visual {
+      display: flex; justify-content: center; align-items: center;
+      position: relative;
+    }
+
+    .transaction-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 2rem;
+      width: 100%; max-width: 420px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+      animation: float 6s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    .card-header-title {
+      font-size: 0.85rem; font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .status-badge {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(39,168,94,0.15);
+      border: 1px solid rgba(39,168,94,0.3);
+      border-radius: 50px;
+      padding: 4px 12px;
+      font-size: 0.75rem; font-weight: 600;
+      color: #4de08a;
+    }
+    .status-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #4de08a;
+      animation: pulse 1.5s infinite;
+    }
+
+    .tx-amount {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.4rem; font-weight: 700;
+      color: white;
+      margin-bottom: 0.3rem;
+    }
+    .tx-desc {
+      font-size: 0.85rem; color: rgba(255,255,255,0.45);
+      margin-bottom: 1.8rem;
+    }
+
+    .tx-parties {
+      display: flex; align-items: center; gap: 0;
+      margin-bottom: 1.8rem;
+    }
+    .party {
+      flex: 1; text-align: center;
+    }
+    .party-avatar {
+      width: 46px; height: 46px; border-radius: 50%;
+      margin: 0 auto 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 700;
+    }
+    .party-avatar.buyer { background: linear-gradient(135deg, #1a5faa, #2477d4); color: white; }
+    .party-avatar.seller { background: linear-gradient(135deg, #0ea8a8, #12d4d4); color: white; }
+    .party-name { font-size: 0.8rem; font-weight: 600; color: white; }
+    .party-role { font-size: 0.72rem; color: rgba(255,255,255,0.4); }
+
+    .bridge {
+      flex: 1.2;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 4px;
+    }
+    .bridge-line {
+      width: 100%; height: 2px;
+      background: linear-gradient(90deg, var(--blue), var(--teal));
+      position: relative;
+    }
+    .bridge-line::after {
+      content: '';
+      position: absolute; top: 50%; right: -5px;
+      transform: translateY(-50%);
+      border-left: 8px solid var(--teal);
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+    }
+    .bridge-label {
+      font-size: 0.65rem; font-weight: 700;
+      color: var(--teal);
+      text-transform: uppercase; letter-spacing: 0.1em;
+    }
+
+    .tx-progress {
+      margin-bottom: 1.5rem;
+    }
+    .progress-label {
+      display: flex; justify-content: space-between;
+      font-size: 0.78rem; color: rgba(255,255,255,0.45);
+      margin-bottom: 8px;
+    }
+    .progress-bar {
+      height: 6px; border-radius: 3px;
+      background: rgba(255,255,255,0.08);
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; width: 60%;
+      background: linear-gradient(90deg, var(--blue-bright), var(--teal));
+      border-radius: 3px;
+      animation: progress-pulse 2s ease-in-out infinite;
+    }
+    @keyframes progress-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.75; }
+    }
+
+    .tx-steps {
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .step {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .step-icon {
+      width: 28px; height: 28px; border-radius: 50%;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem;
+    }
+    .step-icon.done { background: rgba(39,168,94,0.2); color: #4de08a; }
+    .step-icon.active { background: rgba(36,119,212,0.25); color: var(--blue-bright); border: 1px solid rgba(36,119,212,0.4); }
+    .step-icon.pending { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.25); }
+    .step-text { font-size: 0.82rem; color: rgba(255,255,255,0.7); }
+    .step.done .step-text { color: rgba(255,255,255,0.9); }
+    .step.pending .step-text { color: rgba(255,255,255,0.3); }
+
+    .mini-card {
+      position: absolute;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 12px 16px;
+      backdrop-filter: blur(20px);
+      display: flex; align-items: center; gap: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .mini-card.top-left {
+      top: -20px; left: -40px;
+      animation: float2 5s ease-in-out infinite;
+    }
+    .mini-card.bottom-right {
+      bottom: -20px; right: -40px;
+      animation: float3 7s ease-in-out infinite;
+    }
+    @keyframes float2 { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    @keyframes float3 { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(8px); } }
+    .mini-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .mini-icon.shield { background: rgba(39,168,94,0.2); }
+    .mini-icon.lock { background: rgba(36,119,212,0.2); }
+    .mini-title { font-size: 0.78rem; font-weight: 600; color: white; }
+    .mini-sub { font-size: 0.7rem; color: rgba(255,255,255,0.4); }
+
+    /* ── TRUST BAR ── */
+    .trust-bar {
+      background: var(--off-white);
+      border-top: 1px solid var(--light-gray);
+      border-bottom: 1px solid var(--light-gray);
+      padding: 1.2rem 0;
+    }
+    .trust-bar-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 2rem;
+    }
+    .trust-item {
+      display: flex; align-items: center; gap: 10px;
+      color: var(--text-mid); font-size: 0.85rem; font-weight: 500;
+    }
+    .trust-item svg { width: 20px; height: 20px; color: var(--blue); }
+    .trust-sep { width: 1px; height: 24px; background: var(--light-gray); }
+    .trust-bar-label {
+      font-size: 0.78rem; font-weight: 600; color: var(--text-light);
+      text-transform: uppercase; letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .how { padding: 6rem 0; background: white; }
+    .section-inner { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+    .section-label {
+      font-size: 0.78rem; font-weight: 700;
+      color: var(--blue-bright);
+      text-transform: uppercase; letter-spacing: 0.12em;
+      margin-bottom: 0.8rem;
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+    .section-sub {
+      font-size: 1rem; color: var(--text-mid);
+      line-height: 1.7; max-width: 520px;
+      margin-bottom: 3.5rem;
+    }
+
+    .steps-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 0;
+      position: relative;
+    }
+    .steps-grid::before {
+      content: '';
+      position: absolute;
+      top: 36px; left: calc(10% + 18px); right: calc(10% + 18px);
+      height: 2px;
+      background: linear-gradient(90deg, var(--light-gray), var(--blue-bright), var(--teal), var(--blue-bright), var(--light-gray));
+      z-index: 0;
+    }
+
+    .step-card {
+      text-align: center; padding: 0 1rem;
+      position: relative; z-index: 1;
+    }
+    .step-num {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: white;
+      border: 3px solid var(--light-gray);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.2rem;
+      position: relative;
+      transition: all 0.3s;
+    }
+    .step-card:hover .step-num {
+      border-color: var(--blue-bright);
+      box-shadow: 0 0 0 8px rgba(36,119,212,0.08);
+    }
+    .step-num-inner {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem; font-weight: 700;
+      color: var(--navy);
+    }
+    .step-icon-big {
+      width: 32px; height: 32px;
+      position: absolute; bottom: -8px; right: -8px;
+      background: white;
+      border-radius: 8px;
+      border: 1px solid var(--light-gray);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+    }
+    .step-title { font-size: 0.95rem; font-weight: 700; color: var(--navy); margin-bottom: 0.5rem; }
+    .step-desc { font-size: 0.82rem; color: var(--text-mid); line-height: 1.6; }
+
+    /* ── FEATURES ── */
+    .features { padding: 6rem 0; background: var(--off-white); }
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .feature-card {
+      background: white;
+      border: 1px solid var(--light-gray);
+      border-radius: 16px;
+      padding: 2rem;
+      transition: all 0.3s;
+      cursor: default;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(13,43,82,0.1);
+      border-color: rgba(36,119,212,0.2);
+    }
+    .feature-icon-wrap {
+      width: 52px; height: 52px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 1.2rem;
+    }
+    .ic-blue { background: rgba(26,95,170,0.1); }
+    .ic-teal { background: rgba(14,168,168,0.1); }
+    .ic-gold { background: rgba(201,154,46,0.1); }
+    .ic-green { background: rgba(39,168,94,0.1); }
+    .ic-purple { background: rgba(109,68,200,0.1); }
+    .ic-red { background: rgba(220,53,69,0.08); }
+    .feature-title { font-size: 1.05rem; font-weight: 700; color: var(--navy); margin-bottom: 0.5rem; }
+    .feature-desc { font-size: 0.875rem; color: var(--text-mid); line-height: 1.65; }
+
+    /* ── CATEGORIES ── */
+    .categories { padding: 6rem 0; background: white; }
+    .cats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; }
+    .cat-card {
+      background: var(--off-white);
+      border: 1px solid var(--light-gray);
+      border-radius: 14px;
+      padding: 1.8rem 1.5rem;
+      text-decoration: none;
+      transition: all 0.25s;
+      display: block;
+    }
+    .cat-card:hover {
+      background: var(--navy);
+      border-color: var(--navy);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 36px rgba(13,43,82,0.2);
+    }
+    .cat-card:hover .cat-title { color: white; }
+    .cat-card:hover .cat-desc { color: rgba(255,255,255,0.55); }
+    .cat-card:hover .cat-num { color: rgba(255,255,255,0.25); }
+    .cat-icon { font-size: 2rem; margin-bottom: 1rem; }
+    .cat-title { font-size: 0.95rem; font-weight: 700; color: var(--navy); margin-bottom: 0.4rem; transition: color 0.25s; }
+    .cat-desc { font-size: 0.8rem; color: var(--text-mid); line-height: 1.5; transition: color 0.25s; }
+    .cat-num { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--light-gray); margin-top: 1rem; transition: color 0.25s; }
+
+    /* ── TESTIMONIALS ── */
+    .testimonials {
+      padding: 6rem 0;
+      background: var(--navy-deep);
+      position: relative;
+      overflow: hidden;
+    }
+    .testimonials::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(26,95,170,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26,95,170,0.07) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    .testimonials .section-title { color: white; }
+    .testimonials .section-sub { color: rgba(255,255,255,0.5); }
+    .testimonials .section-label { color: var(--teal); }
+
+    .testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; position: relative; z-index: 1; }
+    .testi-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 2rem;
+      backdrop-filter: blur(10px);
+    }
+    .testi-stars { color: var(--gold); font-size: 0.9rem; letter-spacing: 2px; margin-bottom: 1rem; }
+    .testi-quote { font-size: 0.92rem; color: rgba(255,255,255,0.75); line-height: 1.7; margin-bottom: 1.5rem; font-style: italic; }
+    .testi-author { display: flex; align-items: center; gap: 12px; }
+    .testi-avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem; color: white; }
+    .testi-name { font-size: 0.88rem; font-weight: 600; color: white; }
+    .testi-role { font-size: 0.76rem; color: rgba(255,255,255,0.4); }
+
+    /* ── CTA STRIP ── */
+    .cta-strip {
+      padding: 5rem 0;
+      background: linear-gradient(135deg, var(--blue) 0%, var(--navy) 100%);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-strip::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(36,119,212,0.3), transparent);
+    }
+    .cta-strip-inner { position: relative; z-index: 1; }
+    .cta-strip h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 3vw, 2.8rem); color: white; font-weight: 700; margin-bottom: 1rem; }
+    .cta-strip p { font-size: 1rem; color: rgba(255,255,255,0.65); margin-bottom: 2rem; }
+    .cta-strip-btns { display: flex; gap: 1rem; justify-content: center; }
+    .btn-white {
+      padding: 0.9rem 2.2rem;
+      background: white;
+      border: none; border-radius: 8px;
+      color: var(--navy); font-size: 1rem; font-weight: 700;
+      cursor: pointer; text-decoration: none;
+      transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.25); }
+    .btn-outline-white {
+      padding: 0.9rem 2.2rem;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.4);
+      border-radius: 8px;
+      color: white; font-size: 1rem; font-weight: 500;
+      cursor: pointer; text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-outline-white:hover { border-color: white; background: rgba(255,255,255,0.08); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--navy-deep);
+      padding: 4rem 0 2rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .footer-inner { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+    .footer-top { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 3rem; }
+    .footer-brand p { font-size: 0.875rem; color: rgba(255,255,255,0.4); line-height: 1.7; margin-top: 1rem; max-width: 280px; }
+    .footer-col h4 { font-size: 0.82rem; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1rem; }
+    .footer-col a { display: block; font-size: 0.875rem; color: rgba(255,255,255,0.55); text-decoration: none; margin-bottom: 0.6rem; transition: color 0.2s; }
+    .footer-col a:hover { color: white; }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.07); padding-top: 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+    .footer-bottom p { font-size: 0.8rem; color: rgba(255,255,255,0.3); }
+    .footer-badges { display: flex; gap: 10px; }
+    .badge-pill { padding: 4px 12px; border: 1px solid rgba(255,255,255,0.12); border-radius: 50px; font-size: 0.7rem; font-weight: 600; color: rgba(255,255,255,0.35); letter-spacing: 0.05em; }
+
+    /* ── SCROLL REVEAL ── */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+    .reveal-delay-5 { transition-delay: 0.5s; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .hero-inner { grid-template-columns: 1fr; gap: 3rem; text-align: center; }
+      .hero-sub { max-width: 100%; }
+      .hero-ctas { justify-content: center; }
+      .hero-stats { justify-content: center; }
+      .hero-visual { display: none; }
+      .steps-grid { grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+      .steps-grid::before { display: none; }
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .cats-grid { grid-template-columns: repeat(2, 1fr); }
+      .testi-grid { grid-template-columns: 1fr; gap: 1rem; }
+      .footer-top { grid-template-columns: 1fr 1fr; gap: 2rem; }
+    }
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr; }
+      .cats-grid { grid-template-columns: 1fr; }
+      .trust-bar-inner { flex-wrap: wrap; gap: 1rem; justify-content: center; }
+      .trust-sep { display: none; }
+      .footer-top { grid-template-columns: 1fr; }
+      .hero-stats { flex-wrap: wrap; }
+      .cta-strip-btns { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1zm0 4.9l5 2.23V11c0 3.46-2.38 6.69-5 7.93-2.62-1.24-5-4.47-5-7.93V8.13L12 5.9z"/>
+        </svg>
+      </div>
+      <span class="logo-text">Trust<span>Bridge</span></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="how-it-works.html">How it Works</a></li>
+      <li><a href="#services">Services</a></li>
+      <li><a href="support.html">Support</a></li>
+    </ul>
+    <div class="nav-actions">
+      <div id="tb-nav-auth" style="display:flex;align-items:center;gap:0.7rem;"></div>
+      <a href="start-transaction.html" class="btn-primary">Start a Transaction</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        Trusted by 500,000+ users worldwide
+      </div>
+      <h1 class="hero-title">
+        The Safest Way to<br>
+        <span class="accent">Transact Online</span><br>
+        — Guaranteed.
+      </h1>
+      <p class="hero-sub">
+        TrustBridge acts as a neutral third party, holding funds securely until both buyer and seller have fulfilled every condition of the deal. No risk, no fraud, no disputes.
+      </p>
+      <div class="hero-ctas">
+        <a href="start-transaction.html" class="btn-cta-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 11H7.83l4.88-4.88c.39-.39.39-1.03 0-1.42-.39-.39-1.02-.39-1.41 0l-6.59 6.59c-.39.39-.39 1.02 0 1.41l6.59 6.59c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L7.83 13H19c.55 0 1-.45 1-1s-.45-1-1-1z"/></svg>
+          Start a Transaction
+        </a>
+        <a href="how-it-works.html" class="btn-cta-secondary">View How It Works</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-num">$8.4B+</div>
+          <div class="stat-label">Transactions secured</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-num">99.97%</div>
+          <div class="stat-label">Dispute resolution rate</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <div class="stat-num">180+</div>
+          <div class="stat-label">Countries supported</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transaction Visual -->
+    <div class="hero-visual">
+      <div class="mini-card top-left">
+        <div class="mini-icon shield">🛡️</div>
+        <div>
+          <div class="mini-title">Funds Protected</div>
+          <div class="mini-sub">256-bit encryption</div>
+        </div>
+      </div>
+
+      <div class="transaction-card">
+        <div class="card-header">
+          <span class="card-header-title">Active Transaction</span>
+          <div class="status-badge">
+            <div class="status-dot"></div>
+            In Escrow
+          </div>
+        </div>
+
+        <div class="tx-amount">$24,500.00</div>
+        <div class="tx-desc">Domain Name Transfer — premium-domain.com</div>
+
+        <div class="tx-parties">
+          <div class="party">
+            <div class="party-avatar buyer">JM</div>
+            <div class="party-name">James M.</div>
+            <div class="party-role">Buyer</div>
+          </div>
+          <div class="bridge">
+            <div class="bridge-line"></div>
+            <div class="bridge-label">TrustBridge</div>
+          </div>
+          <div class="party">
+            <div class="party-avatar seller">SR</div>
+            <div class="party-name">Sarah R.</div>
+            <div class="party-role">Seller</div>
+          </div>
+        </div>
+
+        <div class="tx-progress">
+          <div class="progress-label">
+            <span>Transaction Progress</span>
+            <span>Step 3 of 5</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+        </div>
+
+        <div class="tx-steps">
+          <div class="step done">
+            <div class="step-icon done">✓</div>
+            <div class="step-text">Agreement & terms set</div>
+          </div>
+          <div class="step done">
+            <div class="step-icon done">✓</div>
+            <div class="step-text">Funds secured in escrow</div>
+          </div>
+          <div class="step active">
+            <div class="step-icon active">→</div>
+            <div class="step-text">Seller transferring domain</div>
+          </div>
+          <div class="step pending">
+            <div class="step-icon pending">○</div>
+            <div class="step-text">Buyer inspection period</div>
+          </div>
+          <div class="step pending">
+            <div class="step-icon pending">○</div>
+            <div class="step-text">Funds released to seller</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mini-card bottom-right">
+        <div class="mini-icon lock">🔒</div>
+        <div>
+          <div class="mini-title">Bank-Grade Security</div>
+          <div class="mini-sub">Licensed &amp; Regulated</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── TRUST BAR ── -->
+<div class="trust-bar">
+  <div class="trust-bar-inner">
+    <span class="trust-bar-label">Trusted & Verified</span>
+    <div class="trust-sep"></div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1zm0 4.9l5 2.23V11c0 3.46-2.38 6.69-5 7.93-2.62-1.24-5-4.47-5-7.93V8.13L12 5.9z"/></svg>
+      Fully Licensed &amp; Regulated
+    </div>
+    <div class="trust-sep"></div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+      256-bit SSL Encryption
+    </div>
+    <div class="trust-sep"></div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      FDIC Insured Funds
+    </div>
+    <div class="trust-sep"></div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+      24/7 Transaction Monitoring
+    </div>
+    <div class="trust-sep"></div>
+    <div class="trust-item">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+      Dedicated Dispute Resolution
+    </div>
+  </div>
+</div>
+
+<!-- ── HOW IT WORKS ── -->
+<section class="how" id="how-it-works">
+  <div class="section-inner">
+    <div class="reveal">
+      <p class="section-label">Simple Process</p>
+      <h2 class="section-title">How TrustBridge Works</h2>
+      <p class="section-sub">Our five-step process ensures every transaction is protected from start to finish — with complete transparency for both parties.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card reveal reveal-delay-1">
+        <div class="step-num">
+          <span class="step-num-inner">1</span>
+          <div class="step-icon-big">📝</div>
+        </div>
+        <div class="step-title">Agree on Terms</div>
+        <div class="step-desc">Buyer and seller define the transaction details, inspection period, and delivery conditions.</div>
+      </div>
+      <div class="step-card reveal reveal-delay-2">
+        <div class="step-num">
+          <span class="step-num-inner">2</span>
+          <div class="step-icon-big">💳</div>
+        </div>
+        <div class="step-title">Buyer Pays</div>
+        <div class="step-desc">Buyer sends funds to TrustBridge's secure, regulated escrow account. Seller is notified.</div>
+      </div>
+      <div class="step-card reveal reveal-delay-3">
+        <div class="step-num">
+          <span class="step-num-inner">3</span>
+          <div class="step-icon-big">📦</div>
+        </div>
+        <div class="step-title">Seller Delivers</div>
+        <div class="step-desc">The seller ships goods, transfers digital assets, or fulfills service obligations.</div>
+      </div>
+      <div class="step-card reveal reveal-delay-4">
+        <div class="step-num">
+          <span class="step-num-inner">4</span>
+          <div class="step-icon-big">🔍</div>
+        </div>
+        <div class="step-title">Buyer Inspects</div>
+        <div class="step-desc">An agreed inspection window allows the buyer to verify everything before funds are released.</div>
+      </div>
+      <div class="step-card reveal reveal-delay-5">
+        <div class="step-num">
+          <span class="step-num-inner">5</span>
+          <div class="step-icon-big">✅</div>
+        </div>
+        <div class="step-title">Funds Released</div>
+        <div class="step-desc">Buyer approves and TrustBridge releases payment to the seller. Deal complete.</div>
+      </div>
+    </div>
+    <div style="text-align:center; margin-top:3rem;">
+      <a href="how-it-works.html" style="color:var(--blue-bright); font-size:0.95rem; font-weight:600; text-decoration:none;">View full detailed process →</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FEATURES ── -->
+<section class="features">
+  <div class="section-inner">
+    <div class="reveal">
+      <p class="section-label">Why TrustBridge</p>
+      <h2 class="section-title">Built for Security.<br>Designed for Trust.</h2>
+      <p class="section-sub">Every feature we offer is designed to give buyers and sellers the confidence to transact online — without fear.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon-wrap ic-blue">🔒</div>
+        <div class="feature-title">Bank-Grade Protection</div>
+        <div class="feature-desc">All funds are held in fully regulated, FDIC-insured escrow accounts protected by 256-bit encryption, the same standard used by major financial institutions.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon-wrap ic-teal">🌐</div>
+        <div class="feature-title">Global Coverage</div>
+        <div class="feature-desc">Transact across 180+ countries with support for multiple currencies, wire transfers, credit cards, and cryptocurrency payments.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-3">
+        <div class="feature-icon-wrap ic-gold">⚖️</div>
+        <div class="feature-title">Professional Dispute Resolution</div>
+        <div class="feature-desc">Our licensed dispute resolution team steps in when needed — reviewing evidence, mediating fairly, and delivering a binding decision.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-1">
+        <div class="feature-icon-wrap ic-green">📊</div>
+        <div class="feature-title">Real-Time Tracking</div>
+        <div class="feature-desc">Both parties receive live updates at every stage of the transaction, with email, SMS, and in-app notifications throughout the process.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-2">
+        <div class="feature-icon-wrap ic-purple">🛡️</div>
+        <div class="feature-title">Fraud Prevention</div>
+        <div class="feature-desc">Advanced identity verification, device fingerprinting, and AI-powered fraud detection protect every transaction before it even begins.</div>
+      </div>
+      <div class="feature-card reveal reveal-delay-3">
+        <div class="feature-icon-wrap ic-red">📋</div>
+        <div class="feature-title">Transaction Dashboard</div>
+        <div class="feature-desc">Track every transaction's status in real time using your Transaction ID — no account required. Check progress, approve deliveries, and manage disputes.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CATEGORIES ── -->
+<section class="categories" id="services">
+  <div class="section-inner">
+    <div class="reveal">
+      <p class="section-label">What We Support</p>
+      <h2 class="section-title">Escrow for Every<br>Type of Transaction</h2>
+      <p class="section-sub">Whether you're buying a business, selling a domain, or closing a real estate deal — TrustBridge has a tailored solution.</p>
+    </div>
+    <div class="cats-grid reveal">
+      <a href="start-transaction.html?cat=real-estate" class="cat-card">
+        <div class="cat-icon">🏠</div>
+        <div class="cat-title">Real Estate</div>
+        <div class="cat-desc">Secure residential and commercial property transactions with full legal protection.</div>
+        <div class="cat-num">01</div>
+      </a>
+      <a href="start-transaction.html?cat=domain" class="cat-card">
+        <div class="cat-icon">🌐</div>
+        <div class="cat-title">Domain Names</div>
+        <div class="cat-desc">Buy and sell premium domains with guaranteed transfer and payment protection.</div>
+        <div class="cat-num">02</div>
+      </a>
+      <a href="start-transaction.html?cat=vehicle" class="cat-card">
+        <div class="cat-icon">🚗</div>
+        <div class="cat-title">Motor Vehicles</div>
+        <div class="cat-desc">Cars, motorcycles, boats — high-value vehicle purchases protected end-to-end.</div>
+        <div class="cat-num">03</div>
+      </a>
+      <a href="start-transaction.html?cat=tech" class="cat-card">
+        <div class="cat-icon">💻</div>
+        <div class="cat-title">Tech & Software</div>
+        <div class="cat-desc">Apps, SaaS platforms, websites, and software licenses — transacted securely.</div>
+        <div class="cat-num">04</div>
+      </a>
+      <a href="start-transaction.html?cat=luxury" class="cat-card">
+        <div class="cat-icon">💎</div>
+        <div class="cat-title">Luxury Goods</div>
+        <div class="cat-desc">Watches, jewelry, art, and collectibles — verified and secured before payment.</div>
+        <div class="cat-num">05</div>
+      </a>
+      <a href="start-transaction.html?cat=business" class="cat-card">
+        <div class="cat-icon">🏢</div>
+        <div class="cat-title">Business Sales</div>
+        <div class="cat-desc">Full business acquisitions with milestone-based payment release and due diligence periods.</div>
+        <div class="cat-num">06</div>
+      </a>
+      <a href="start-transaction.html?cat=digital" class="cat-card">
+        <div class="cat-icon">🎨</div>
+        <div class="cat-title">Digital Assets & NFTs</div>
+        <div class="cat-desc">Crypto assets, NFTs, and digital licenses handled with smart contract integration.</div>
+        <div class="cat-num">07</div>
+      </a>
+      <a href="start-transaction.html?cat=services" class="cat-card">
+        <div class="cat-icon">🔧</div>
+        <div class="cat-title">Services & Freelance</div>
+        <div class="cat-desc">Milestone-based escrow for creative, development, and consulting projects.</div>
+        <div class="cat-num">08</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── TESTIMONIALS ── -->
+<section class="testimonials">
+  <div class="section-inner">
+    <div class="reveal">
+      <p class="section-label">Real Stories</p>
+      <h2 class="section-title">Trusted by Thousands of<br>Buyers &amp; Sellers</h2>
+      <p class="section-sub">From first-time buyers to seasoned business brokers — here's what our customers say.</p>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card reveal reveal-delay-1">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-quote">"I sold a $180,000 domain and was terrified of being scammed. TrustBridge gave both me and the buyer complete peace of mind. The process was flawless — I'd never do a high-value deal without it."</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background: linear-gradient(135deg, #1a5faa, #2477d4);">DK</div>
+          <div>
+            <div class="testi-name">David Kowalski</div>
+            <div class="testi-role">Domain Broker · Chicago, IL</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal reveal-delay-2">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-quote">"Used TrustBridge for a vehicle purchase from a private seller across the country. Having a neutral third party hold the funds while I inspected the car was a game-changer. Highly recommend."</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background: linear-gradient(135deg, #0ea8a8, #12d4d4);">ML</div>
+          <div>
+            <div class="testi-name">Michelle L.</div>
+            <div class="testi-role">Private Buyer · Austin, TX</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal reveal-delay-3">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-quote">"Simple and transparent. I started a transaction in minutes, got my Transaction ID, and tracked the whole deal in the dashboard without needing to create an account. Brilliant."</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background: linear-gradient(135deg, #c99a2e, #f0c040);">AT</div>
+          <div>
+            <div class="testi-name">Alex Thompson</div>
+            <div class="testi-role">Business Buyer · New York, NY</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA STRIP ── -->
+<section class="cta-strip">
+  <div class="section-inner cta-strip-inner">
+    <h2>Ready to Transact with Confidence?</h2>
+    <p>Join over 500,000 buyers and sellers who trust TrustBridge with every deal.</p>
+    <div class="cta-strip-btns">
+      <a href="start-transaction.html" class="btn-white">Start a Transaction — It's Free</a>
+      <a href="dashboard.html" class="btn-outline-white">Check Your Transaction</a>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="index.html" class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1zm0 4.9l5 2.23V11c0 3.46-2.38 6.69-5 7.93-2.62-1.24-5-4.47-5-7.93V8.13L12 5.9z"/>
+            </svg>
+          </div>
+          <span class="logo-text">Trust<span>Bridge</span></span>
+        </a>
+        <p>The world's most trusted online escrow service. Protecting buyers and sellers in over 180 countries since 2018.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Services</h4>
+        <a href="#">Domain Escrow</a>
+        <a href="#">Real Estate</a>
+        <a href="#">Vehicles</a>
+        <a href="#">Business Sales</a>
+        <a href="#">Digital Assets</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#">About Us</a>
+        <a href="#">Press</a>
+        <a href="#">Careers</a>
+        <a href="#">Partners</a>
+        <a href="support.html">Support</a>
+        <a href="support.html">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Terms of Service</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Compliance</a>
+        <a href="#">Licenses</a>
+        <a href="#">Cookie Policy</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 TrustBridge Financial Services, Inc. All rights reserved. TrustBridge is a licensed escrow service.</p>
+      <div class="footer-badges">
+        <span class="badge-pill">SSL Secured</span>
+        <span class="badge-pill">FDIC Insured</span>
+        <span class="badge-pill">Licensed</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Initialize auth
+  (async function(){ await TBAuthUI.init(); })();
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  reveals.forEach(r => io.observe(r));
+
+  window.addEventListener('load', () => {
+    document.querySelectorAll('.hero-content, .hero-badge, .hero-title, .hero-sub, .hero-ctas, .hero-stats').forEach((el, i) => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = `opacity 0.7s ease ${i * 0.12}s, transform 0.7s ease ${i * 0.12}s`;
+      setTimeout(() => {
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0)';
+      }, 100);
+    });
+  });
+</script>
+
+</body>
+</html>

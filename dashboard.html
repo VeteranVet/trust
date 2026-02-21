@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><defs><linearGradient id=%22g%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22><stop offset=%220%25%22 stop-color=%22%232477d4%22/><stop offset=%22100%25%22 stop-color=%22%230ea8a8%22/></linearGradient></defs><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22url(%23g)%22/><path d=%22M50 10 L18 24 L18 48 C18 68 32 85 50 91 C68 85 82 68 82 48 L82 24 Z%22 fill=%22white%22/></svg>" />
+  <title>Dashboard — TrustBridge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="auth.js"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --navy: #0d2b52; --navy-deep: #071a35; --navy-mid: #163a6e;
+      --blue: #1a5faa; --blue-bright: #2477d4; --teal: #0ea8a8;
+      --white: #fff; --off-white: #f4f7fb; --light-gray: #e8edf5;
+      --text-dark: #0d1f3c; --text-mid: #4a5568; --text-light: #8a99b3;
+      --green: #27a85e; --red: #e53e3e; --gold: #c99a2e; --orange: #e07b20;
+      --sidebar-w: 260px;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; color: var(--text-dark); background: var(--off-white); min-height: 100vh; display: flex; }
+
+    /* ══ LOOKUP GATE ══ */
+    .lookup-gate {
+      position: fixed; inset: 0; background: var(--navy-deep);
+      z-index: 1000; display: flex; align-items: center; justify-content: center;
+      padding: 2rem;
+    }
+    .lookup-gate.hidden { display: none; }
+    .lookup-card {
+      background: white; border-radius: 24px; padding: 3rem 2.5rem;
+      width: 100%; max-width: 460px;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.4);
+      text-align: center;
+    }
+    .lookup-logo { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 2rem; text-decoration: none; }
+    .lookup-logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--blue-bright), var(--teal)); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .lookup-logo-icon svg { width: 22px; height: 22px; fill: white; }
+    .lookup-logo-text { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--navy); }
+    .lookup-logo-text span { color: var(--teal); }
+    .lookup-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; color: var(--navy); margin-bottom: 0.5rem; }
+    .lookup-sub { font-size: 0.9rem; color: var(--text-mid); line-height: 1.6; margin-bottom: 2rem; }
+    .lookup-input-wrap { position: relative; margin-bottom: 0.7rem; }
+    .lookup-input {
+      width: 100%; padding: 0.9rem 1.2rem; font-family: 'DM Sans', sans-serif;
+      font-size: 1rem; font-weight: 600; color: var(--navy);
+      border: 2px solid var(--light-gray); border-radius: 10px;
+      outline: none; transition: border-color 0.2s;
+      letter-spacing: 0.05em; text-align: center;
+    }
+    .lookup-input:focus { border-color: var(--blue-bright); }
+    .lookup-input.error { border-color: var(--red); }
+    .lookup-input::placeholder { font-weight: 400; letter-spacing: 0; color: var(--text-light); }
+    .lookup-error { font-size: 0.82rem; color: var(--red); margin-bottom: 0.7rem; display: none; }
+    .lookup-error.show { display: block; }
+    .lookup-btn {
+      width: 100%; padding: 0.95rem; background: linear-gradient(135deg, var(--blue-bright), var(--blue));
+      border: none; border-radius: 10px; color: white; font-family: 'DM Sans', sans-serif;
+      font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(36,119,212,0.35); margin-bottom: 1.5rem;
+    }
+    .lookup-btn:hover { transform: translateY(-2px); }
+    .lookup-hint {
+      background: var(--off-white); border: 1px solid var(--light-gray);
+      border-radius: 10px; padding: 0.9rem 1.2rem; text-align: left;
+      margin-bottom: 1.5rem;
+    }
+    .lookup-hint-label { font-size: 0.72rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+    .lookup-hint-id {
+      font-size: 0.85rem; font-family: monospace; color: var(--blue-bright);
+      cursor: pointer; padding: 3px 0; display: block; transition: color 0.15s;
+    }
+    .lookup-hint-id:hover { color: var(--navy); }
+    .lookup-links { display: flex; gap: 1rem; justify-content: center; font-size: 0.82rem; }
+    .lookup-links a { color: var(--blue-bright); text-decoration: none; }
+    .lookup-links a:hover { text-decoration: underline; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: var(--sidebar-w); background: var(--navy-deep); min-height: 100vh;
+      position: fixed; top: 0; left: 0; bottom: 0;
+      display: flex; flex-direction: column;
+      border-right: 1px solid rgba(255,255,255,0.06);
+      z-index: 100;
+    }
+    .sidebar-logo { padding: 1.5rem 1.6rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-icon { width: 34px; height: 34px; background: linear-gradient(135deg, var(--blue-bright), var(--teal)); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .logo-icon svg { width: 19px; height: 19px; fill: white; }
+    .logo-text { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; color: white; }
+    .logo-text span { color: var(--teal); }
+
+    .sidebar-tx-id { padding: 1.2rem 1.6rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
+    .tx-id-label { font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 4px; }
+    .tx-id-value { font-size: 0.9rem; font-weight: 700; color: white; font-family: monospace; letter-spacing: 0.05em; }
+    .tx-id-status { display: flex; align-items: center; gap: 5px; margin-top: 4px; }
+    .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+    .status-text { font-size: 0.68rem; color: rgba(255,255,255,0.4); }
+
+    .sidebar-nav { flex: 1; padding: 1rem 0.8rem; }
+    .nav-section-label { font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.25); text-transform: uppercase; letter-spacing: 0.12em; padding: 0.5rem 0.8rem; margin-top: 0.5rem; }
+    .nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0.65rem 0.8rem; border-radius: 8px;
+      text-decoration: none; cursor: pointer;
+      color: rgba(255,255,255,0.55); font-size: 0.87rem; font-weight: 500;
+      transition: all 0.2s; margin-bottom: 2px;
+      border: none; background: none; width: 100%; text-align: left; font-family: 'DM Sans', sans-serif;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
+    .nav-item.active { background: rgba(36,119,212,0.2); color: white; }
+    .nav-item.active .nav-icon { color: var(--blue-bright); }
+    .nav-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+    .nav-badge { margin-left: auto; background: var(--blue-bright); color: white; font-size: 0.65rem; font-weight: 700; padding: 2px 7px; border-radius: 50px; }
+    .nav-badge.orange { background: var(--orange); }
+
+    .sidebar-bottom { padding: 1rem 0.8rem; border-top: 1px solid rgba(255,255,255,0.06); }
+
+    /* MAIN */
+    .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+    /* TOP BAR */
+    .topbar { background: white; border-bottom: 1px solid var(--light-gray); padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+    .topbar-left { display: flex; flex-direction: column; }
+    .topbar-title { font-size: 1rem; font-weight: 700; color: var(--navy); }
+    .topbar-sub { font-size: 0.75rem; color: var(--text-light); }
+    .topbar-right { display: flex; align-items: center; gap: 1rem; }
+    .topbar-btn { padding: 0.5rem 1.2rem; background: linear-gradient(135deg, var(--blue-bright), var(--blue)); border: none; border-radius: 7px; color: white; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; box-shadow: 0 2px 10px rgba(36,119,212,0.35); display: flex; align-items: center; gap: 6px; font-family: 'DM Sans', sans-serif; }
+    .topbar-btn:hover { transform: translateY(-1px); }
+    .notif-btn { width: 36px; height: 36px; border-radius: 8px; background: var(--off-white); border: 1px solid var(--light-gray); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: all 0.2s; }
+    .notif-btn:hover { background: var(--light-gray); }
+    .notif-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--red); border: 2px solid white; }
+
+    /* PAGE CONTENT */
+    .page-content { flex: 1; padding: 2rem; }
+
+    /* CONTENT PANELS */
+    .content-panel { display: none; }
+    .content-panel.active { display: block; }
+
+    /* STATS ROW */
+    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; margin-bottom: 2rem; }
+    .stat-card { background: white; border: 1px solid var(--light-gray); border-radius: 14px; padding: 1.4rem 1.5rem; transition: all 0.25s; }
+    .stat-card:hover { box-shadow: 0 4px 20px rgba(13,43,82,0.08); }
+    .stat-card-label { font-size: 0.75rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.5rem; }
+    .stat-card-value { font-family: 'Playfair Display', serif; font-size: 1.9rem; font-weight: 700; color: var(--navy); margin-bottom: 0.3rem; }
+    .stat-card-sub { font-size: 0.75rem; color: var(--text-light); display: flex; align-items: center; gap: 4px; }
+    .stat-up { color: var(--green); font-weight: 600; }
+    .stat-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; margin-bottom: 0.8rem; }
+    .si-blue { background: rgba(36,119,212,0.1); }
+    .si-green { background: rgba(39,168,94,0.1); }
+    .si-teal { background: rgba(14,168,168,0.1); }
+    .si-gold { background: rgba(201,154,46,0.1); }
+
+    /* SECTION HEADER */
+    .section-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; }
+    .section-hdr-title { font-size: 1rem; font-weight: 700; color: var(--navy); }
+    .section-hdr-link { font-size: 0.82rem; color: var(--blue-bright); text-decoration: none; font-weight: 500; cursor: pointer; }
+
+    /* TRANSACTION CARDS */
+    .tx-list { display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 2rem; }
+    .tx-card { background: white; border: 1px solid var(--light-gray); border-radius: 14px; padding: 1.3rem 1.5rem; display: flex; align-items: center; gap: 1.2rem; transition: all 0.2s; cursor: pointer; }
+    .tx-card:hover { border-color: rgba(36,119,212,0.25); box-shadow: 0 4px 20px rgba(13,43,82,0.07); }
+    .tx-cat-icon { width: 44px; height: 44px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+    .tx-info { flex: 1; min-width: 0; }
+    .tx-title { font-size: 0.9rem; font-weight: 700; color: var(--navy); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tx-meta { font-size: 0.77rem; color: var(--text-light); display: flex; align-items: center; gap: 8px; }
+    .tx-meta-sep { width: 3px; height: 3px; border-radius: 50%; background: var(--light-gray); flex-shrink: 0; }
+    .tx-amount { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; color: var(--navy); text-align: right; flex-shrink: 0; }
+    .tx-amount-sub { font-size: 0.72rem; color: var(--text-light); text-align: right; font-family: 'DM Sans', sans-serif; margin-top: 2px; }
+    .tx-status-wrap { flex-shrink: 0; text-align: right; }
+
+    /* STATUS BADGES */
+    .status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 50px; font-size: 0.73rem; font-weight: 700; white-space: nowrap; }
+    .sb-awaiting { background: rgba(201,154,46,0.12); color: #9a6f00; border: 1px solid rgba(201,154,46,0.25); }
+    .sb-escrow { background: rgba(36,119,212,0.1); color: var(--blue); border: 1px solid rgba(36,119,212,0.2); }
+    .sb-inspection { background: rgba(14,168,168,0.1); color: var(--teal); border: 1px solid rgba(14,168,168,0.25); }
+    .sb-complete { background: rgba(39,168,94,0.1); color: var(--green); border: 1px solid rgba(39,168,94,0.25); }
+    .sb-dispute { background: rgba(229,62,62,0.1); color: var(--red); border: 1px solid rgba(229,62,62,0.2); }
+    .sb-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+    .sb-dot.pulse { animation: sbpulse 1.5s ease-in-out infinite; }
+    @keyframes sbpulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* GRID LAYOUT */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin-bottom: 2rem; }
+    .card { background: white; border: 1px solid var(--light-gray); border-radius: 14px; padding: 1.4rem; }
+    .card-title { font-size: 0.88rem; font-weight: 700; color: var(--navy); margin-bottom: 1.2rem; display: flex; align-items: center; gap: 8px; }
+    .card-icon { width: 26px; height: 26px; border-radius: 6px; background: rgba(26,95,170,0.1); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; }
+
+    /* ACTIVITY FEED */
+    .activity-list { display: flex; flex-direction: column; gap: 0; }
+    .activity-item { display: flex; align-items: flex-start; gap: 10px; padding: 0.75rem 0; border-bottom: 1px solid var(--light-gray); }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+    .ad-blue { background: var(--blue-bright); }
+    .ad-green { background: var(--green); }
+    .ad-gold { background: var(--gold); }
+    .ad-teal { background: var(--teal); }
+    .activity-text { font-size: 0.82rem; color: var(--text-mid); line-height: 1.5; flex: 1; }
+    .activity-text strong { color: var(--navy); }
+    .activity-time { font-size: 0.72rem; color: var(--text-light); white-space: nowrap; flex-shrink: 0; }
+
+    /* QUICK ACTION BUTTONS */
+    .quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+    .qa-btn { padding: 0.9rem 1rem; background: var(--off-white); border: 1px solid var(--light-gray); border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: all 0.2s; text-decoration: none; font-family: 'DM Sans', sans-serif; }
+    .qa-btn:hover { background: white; border-color: rgba(36,119,212,0.3); box-shadow: 0 4px 16px rgba(13,43,82,0.07); }
+    .qa-icon { font-size: 1.2rem; }
+    .qa-title { font-size: 0.83rem; font-weight: 700; color: var(--navy); }
+    .qa-sub { font-size: 0.72rem; color: var(--text-light); }
+
+    /* TX DETAIL MODAL */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; display: none; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(4px); }
+    .modal-overlay.open { display: flex; }
+    .modal { background: white; border-radius: 20px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 80px rgba(0,0,0,0.25); animation: modal-in 0.25s ease; }
+    @keyframes modal-in { from{transform:scale(0.95);opacity:0} to{transform:scale(1);opacity:1} }
+    .modal-header { padding: 1.5rem 1.8rem; border-bottom: 1px solid var(--light-gray); display: flex; align-items: center; justify-content: space-between; }
+    .modal-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 700; color: var(--navy); }
+    .modal-close { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--light-gray); background: var(--off-white); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: var(--text-mid); transition: all 0.2s; }
+    .modal-close:hover { background: var(--light-gray); }
+    .modal-body { padding: 1.8rem; }
+    .modal-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 0.8rem 0; border-bottom: 1px solid var(--light-gray); }
+    .modal-row:last-child { border-bottom: none; }
+    .modal-key { font-size: 0.8rem; color: var(--text-mid); font-weight: 500; }
+    .modal-val { font-size: 0.85rem; color: var(--navy); font-weight: 600; text-align: right; max-width: 55%; }
+    .modal-actions { padding: 1.2rem 1.8rem; border-top: 1px solid var(--light-gray); display: flex; gap: 0.8rem; }
+    .modal-btn { flex: 1; padding: 0.75rem; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .mb-primary { background: linear-gradient(135deg, var(--blue-bright), var(--blue)); color: white; border: none; box-shadow: 0 3px 12px rgba(36,119,212,0.3); }
+    .mb-primary:hover { transform: translateY(-1px); }
+    .mb-outline { background: transparent; border: 1.5px solid var(--light-gray); color: var(--text-mid); }
+    .mb-outline:hover { border-color: var(--navy); color: var(--navy); }
+    .mb-danger { background: rgba(229,62,62,0.08); border: 1.5px solid rgba(229,62,62,0.2); color: var(--red); }
+    .mb-danger:hover { background: rgba(229,62,62,0.15); }
+
+    /* PROGRESS TRACKER */
+    .progress-track { display: flex; flex-direction: column; gap: 0; margin: 1rem 0; }
+    .pt-step { display: flex; gap: 12px; padding: 0.5rem 0; }
+    .pt-left { display: flex; flex-direction: column; align-items: center; }
+    .pt-dot { width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; z-index: 1; }
+    .ptd-done { background: var(--green); color: white; }
+    .ptd-active { background: var(--blue-bright); color: white; animation: sbpulse 1.5s infinite; }
+    .ptd-pending { background: var(--light-gray); color: var(--text-light); }
+    .pt-line { width: 2px; flex: 1; background: var(--light-gray); margin: 2px 0; min-height: 16px; }
+    .pt-line.done { background: var(--green); }
+    .pt-step-text { font-size: 0.82rem; color: var(--text-mid); padding-top: 1px; line-height: 1.4; }
+    .pt-step-text.active { color: var(--navy); font-weight: 600; }
+    .pt-step-text.done { color: var(--green); }
+
+    /* EMPTY STATE */
+    .empty-state { text-align: center; padding: 3rem 2rem; }
+    .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+    .empty-title { font-size: 1rem; font-weight: 700; color: var(--navy); margin-bottom: 0.4rem; }
+    .empty-sub { font-size: 0.85rem; color: var(--text-light); margin-bottom: 1.5rem; }
+
+    /* WALLET ADDRESS */
+    .wallet-box { background: var(--off-white); border: 1px solid var(--light-gray); border-radius: 10px; padding: 1rem; display: flex; align-items: center; gap: 10px; }
+    .wallet-addr { font-size: 0.75rem; font-family: monospace; color: var(--text-mid); flex: 1; word-break: break-all; line-height: 1.4; }
+    .copy-sm { padding: 4px 10px; background: var(--blue-bright); border: none; border-radius: 6px; color: white; font-size: 0.72rem; font-weight: 600; cursor: pointer; flex-shrink: 0; font-family: 'DM Sans', sans-serif; transition: background 0.2s; }
+    .copy-sm:hover { background: var(--blue); }
+
+    @media(max-width:900px){ .stats-row{grid-template-columns:1fr 1fr;} .two-col{grid-template-columns:1fr;} }
+    @media(max-width:700px){ .sidebar{transform:translateX(-100%);} .main{margin-left:0;} }
+  </style>
+</head>
+<body>
+
+<!-- ══ TRANSACTION ID LOOKUP GATE ══ -->
+<div class="lookup-gate" id="lookupGate">
+  <div class="lookup-card">
+    <a href="index.html" class="lookup-logo">
+      <div class="lookup-logo-icon"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1zm0 4.9l5 2.23V11c0 3.46-2.38 6.69-5 7.93-2.62-1.24-5-4.47-5-7.93V8.13L12 5.9z"/></svg></div>
+      <span class="lookup-logo-text">Trust<span>Bridge</span></span>
+    </a>
+    <div class="lookup-title">Track Your Transaction</div>
+    <p class="lookup-sub">Enter your Transaction ID to view your dashboard. Your ID was provided when you started the transaction.</p>
+
+    <!-- User's own transactions (shown when logged in) -->
+    <div id="userTxHint" style="display:none;margin-bottom:1rem;">
+      <div class="lookup-hint">
+        <div class="lookup-hint-label" id="userTxHintLabel">Your Transactions — click to load</div>
+        <div id="userTxList"></div>
+      </div>
+    </div>
+
+    <div class="lookup-input-wrap">
+      <input type="text" id="txIdInput" class="lookup-input" placeholder="e.g. TBR-4821903" oninput="clearLookupError()" onkeydown="if(event.key==='Enter') lookupTransaction()" />
+    </div>
+    <div class="lookup-error" id="lookupError">Transaction ID not found. Please check and try again.</div>
+    <button class="lookup-btn" onclick="lookupTransaction()">View My Dashboard →</button>
+    <div class="lookup-hint">
+      <div class="lookup-hint-label">Demo Transaction IDs — click to try</div>
+      <span class="lookup-hint-id" onclick="fillAndLookup('TBR-4821903')">TBR-4821903 — Domain sale, Inspection Period</span>
+      <span class="lookup-hint-id" onclick="fillAndLookup('TBR-5190234')">TBR-5190234 — Rolex watch, Awaiting Payment</span>
+      <span class="lookup-hint-id" onclick="fillAndLookup('TBR-4920111')">TBR-4920111 — SaaS app, In Escrow</span>
+    </div>
+    <div class="lookup-links">
+      <a href="start-transaction.html">Start a new transaction</a>
+      <a href="index.html">Back to home</a>
+    </div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <a href="index.html" class="logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1zm0 4.9l5 2.23V11c0 3.46-2.38 6.69-5 7.93-2.62-1.24-5-4.47-5-7.93V8.13L12 5.9z"/></svg></div>
+      <span class="logo-text">Trust<span>Bridge</span></span>
+    </a>
+  </div>
+
+  <div class="sidebar-tx-id">
+    <div class="tx-id-label">Viewing Transaction</div>
+    <div class="tx-id-value" id="sidebarTxId">—</div>
+    <div class="tx-id-status"><div class="status-dot"></div><span class="status-text">Active</span></div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <button class="nav-item active" onclick="showPanel('overview')">
+      <span class="nav-icon">📊</span> Overview
+    </button>
+    <button class="nav-item" onclick="showPanel('transactions')">
+      <span class="nav-icon">🔄</span> My Transactions
+      <span class="nav-badge">3</span>
+    </button>
+    <button class="nav-item" onclick="showPanel('history')">
+      <span class="nav-icon">📋</span> History
+    </button>
+
+    <div class="nav-section-label">Account</div>
+    <button class="nav-item" onclick="showPanel('wallet')">
+      <span class="nav-icon">💼</span> Wallet & Payments
+    </button>
+    <button class="nav-item" onclick="showPanel('support')">
+      <span class="nav-icon">💬</span> Support
+      <span class="nav-badge orange">1</span>
+    </button>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <a href="index.html" class="nav-item" style="text-decoration:none;">
+      <span class="nav-icon">🏠</span> Back to Website
+    </a>
+    <button class="nav-item" onclick="exitDashboard()">
+      <span class="nav-icon">🔍</span> Look Up Another
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title" id="topbarTitle">Dashboard Overview</div>
+      <div class="topbar-sub" id="topbarSub">Loading transaction...</div>
+    </div>
+    <div class="topbar-right">
+      <div class="notif-btn" onclick="alert('No new notifications.')">
+        🔔
+        <div class="notif-dot"></div>
+      </div>
+      <a href="start-transaction.html" class="topbar-btn">+ New Transaction</a>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- ═══ OVERVIEW PANEL ═══ -->
+    <div class="content-panel active" id="panel-overview">
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon si-blue">🔄</div>
+          <div class="stat-card-label">Active Transactions</div>
+          <div class="stat-card-value">3</div>
+          <div class="stat-card-sub">2 awaiting action</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon si-green">✅</div>
+          <div class="stat-card-label">Completed</div>
+          <div class="stat-card-value">12</div>
+          <div class="stat-card-sub"><span class="stat-up">↑ 2</span> this month</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon si-teal">💰</div>
+          <div class="stat-card-label">Total Secured</div>
+          <div class="stat-card-value">$84.2K</div>
+          <div class="stat-card-sub">Across all transactions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon si-gold">🛡️</div>
+          <div class="stat-card-label">Disputes Won</div>
+          <div class="stat-card-value">1/1</div>
+          <div class="stat-card-sub">100% success rate</div>
+        </div>
+      </div>
+
+      <div class="section-hdr">
+        <div class="section-hdr-title">Active Transactions</div>
+        <a class="section-hdr-link" onclick="showPanel('transactions')">View all →</a>
+      </div>
+      <div class="tx-list">
+        <div class="tx-card" onclick="openModal('tx1')">
+          <div class="tx-cat-icon" style="background:rgba(14,168,168,0.1);">🌐</div>
+          <div class="tx-info">
+            <div class="tx-title">Sale of premium-domain.com</div>
+            <div class="tx-meta">TBR-4821903 <div class="tx-meta-sep"></div> With: Sarah R. <div class="tx-meta-sep"></div> Started 3 days ago</div>
+          </div>
+          <div>
+            <div class="tx-amount">$24,500</div>
+            <div class="tx-amount-sub">USDC · Solana</div>
+          </div>
+          <div class="tx-status-wrap">
+            <div class="status-badge sb-inspection"><div class="sb-dot pulse"></div> Inspection</div>
+          </div>
+        </div>
+        <div class="tx-card" onclick="openModal('tx2')">
+          <div class="tx-cat-icon" style="background:rgba(201,154,46,0.1);">💎</div>
+          <div class="tx-info">
+            <div class="tx-title">Rolex Submariner 2023 — Ref. 124060</div>
+            <div class="tx-meta">TBR-5190234 <div class="tx-meta-sep"></div> With: Michael T. <div class="tx-meta-sep"></div> Started today</div>
+          </div>
+          <div>
+            <div class="tx-amount">$11,200</div>
+            <div class="tx-amount-sub">Wire Transfer</div>
+          </div>
+          <div class="tx-status-wrap">
+            <div class="status-badge sb-awaiting"><div class="sb-dot pulse"></div> Awaiting Payment</div>
+          </div>
+        </div>
+        <div class="tx-card" onclick="openModal('tx3')">
+          <div class="tx-cat-icon" style="background:rgba(26,95,170,0.1);">💻</div>
+          <div class="tx-info">
+            <div class="tx-title">SaaS App Source Code & IP Transfer</div>
+            <div class="tx-meta">TBR-4920111 <div class="tx-meta-sep"></div> With: Dev Studio LLC <div class="tx-meta-sep"></div> Started 1 week ago</div>
+          </div>
+          <div>
+            <div class="tx-amount">$7,500</div>
+            <div class="tx-amount-sub">ACH Transfer</div>
+          </div>
+          <div class="tx-status-wrap">
+            <div class="status-badge sb-escrow"><div class="sb-dot pulse"></div> In Escrow</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <!-- Activity feed -->
+        <div class="card">
+          <div class="card-title"><div class="card-icon">📰</div>Recent Activity</div>
+          <div class="activity-list">
+            <div class="activity-item"><div class="activity-dot ad-teal"></div><div class="activity-text">Buyer inspection started on <strong>premium-domain.com</strong> — 5 days remaining</div><div class="activity-time">2h ago</div></div>
+            <div class="activity-item"><div class="activity-dot ad-blue"></div><div class="activity-text">New transaction created: <strong>Rolex Submariner</strong> — awaiting your payment</div><div class="activity-time">4h ago</div></div>
+            <div class="activity-item"><div class="activity-dot ad-green"></div><div class="activity-text">Transaction <strong>TBR-3810029</strong> completed — $3,200 released to seller</div><div class="activity-time">Yesterday</div></div>
+            <div class="activity-item"><div class="activity-dot ad-gold"></div><div class="activity-text">Delivery confirmed for <strong>SaaS App Transfer</strong> — inspection period begins soon</div><div class="activity-time">2 days ago</div></div>
+            <div class="activity-item"><div class="activity-dot ad-green"></div><div class="activity-text">Identity verification completed — your account is fully verified</div><div class="activity-time">5 days ago</div></div>
+          </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="card">
+          <div class="card-title"><div class="card-icon">⚡</div>Quick Actions</div>
+          <div class="quick-actions">
+            <a href="start-transaction.html" class="qa-btn">
+              <div class="qa-icon">➕</div>
+              <div><div class="qa-title">New Transaction</div><div class="qa-sub">Start a new escrow</div></div>
+            </a>
+            <a class="qa-btn" onclick="showPanel('transactions')">
+              <div class="qa-icon">🔄</div>
+              <div><div class="qa-title">View Active</div><div class="qa-sub">3 transactions</div></div>
+            </a>
+            <a class="qa-btn" onclick="showPanel('wallet')">
+              <div class="qa-icon">💼</div>
+              <div><div class="qa-title">Payment Methods</div><div class="qa-sub">Manage wallets</div></div>
+            </a>
+            <a href="how-it-works.html" class="qa-btn">
+              <div class="qa-icon">📖</div>
+              <div><div class="qa-title">How it Works</div><div class="qa-sub">Learn the process</div></div>
+            </a>
+          </div>
+
+          <div style="margin-top:1.5rem;">
+            <div class="card-title" style="margin-bottom:0.8rem;"><div class="card-icon">◎</div>USDC Escrow Wallet</div>
+            <div style="font-size:0.75rem;color:var(--text-light);margin-bottom:0.5rem;">Send USDC (Solana) to this address to fund transactions:</div>
+            <div class="wallet-box">
+              <div class="wallet-addr">A7R9bY8ufHM5eUa9TUuiommJvgcsuuiTHha7ZKD3RVws</div>
+              <button class="copy-sm" onclick="copyWallet(this)">Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══ TRANSACTIONS PANEL ═══ -->
+    <div class="content-panel" id="panel-transactions">
+      <div class="section-hdr" style="margin-bottom:1.5rem;">
+        <div class="section-hdr-title" style="font-size:1.2rem;">My Active Transactions</div>
+        <a href="start-transaction.html" class="topbar-btn" style="font-size:0.82rem;padding:0.45rem 1rem;">+ New Transaction</a>
+      </div>
+
+      <!-- Filter tabs -->
+      <div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap;">
+        <button class="status-badge sb-escrow" style="cursor:pointer;padding:6px 14px;" onclick="filterTx('all',this)">All (3)</button>
+        <button class="status-badge sb-awaiting" style="cursor:pointer;padding:6px 14px;" onclick="filterTx('awaiting',this)">Awaiting Payment (1)</button>
+        <button class="status-badge sb-escrow" style="cursor:pointer;padding:6px 14px;" onclick="filterTx('escrow',this)">In Escrow (1)</button>
+        <button class="status-badge sb-inspection" style="cursor:pointer;padding:6px 14px;" onclick="filterTx('inspection',this)">Inspection (1)</button>
+      </div>
+
+      <div class="tx-list">
+        <div class="tx-card" data-status="inspection" onclick="openModal('tx1')">
+          <div class="tx-cat-icon" style="background:rgba(14,168,168,0.1);">🌐</div>
+          <div class="tx-info">
+            <div class="tx-title">Sale of premium-domain.com</div>
+            <div class="tx-meta">TBR-4821903 <div class="tx-meta-sep"></div> Counterparty: Sarah R. <div class="tx-meta-sep"></div> 5 days inspection remaining</div>
+          </div>
+          <div><div class="tx-amount">$24,500</div><div class="tx-amount-sub">24,750.00 USDC</div></div>
+          <div class="tx-status-wrap"><div class="status-badge sb-inspection"><div class="sb-dot pulse"></div> Inspection Period</div></div>
+        </div>
+        <div class="tx-card" data-status="awaiting" onclick="openModal('tx2')">
+          <div class="tx-cat-icon" style="background:rgba(201,154,46,0.1);">💎</div>
+          <div class="tx-info">
+            <div class="tx-title">Rolex Submariner 2023 — Ref. 124060</div>
+            <div class="tx-meta">TBR-5190234 <div class="tx-meta-sep"></div> Counterparty: Michael T. <div class="tx-meta-sep"></div> Awaiting your USDC payment</div>
+          </div>
+          <div><div class="tx-amount">$11,200</div><div class="tx-amount-sub">11,450.00 USDC</div></div>
+          <div class="tx-status-wrap"><div class="status-badge sb-awaiting"><div class="sb-dot pulse"></div> Awaiting Payment</div></div>
+        </div>
+        <div class="tx-card" data-status="escrow" onclick="openModal('tx3')">
+          <div class="tx-cat-icon" style="background:rgba(26,95,170,0.1);">💻</div>
+          <div class="tx-info">
+            <div class="tx-title">SaaS App Source Code & IP Transfer</div>
+            <div class="tx-meta">TBR-4920111 <div class="tx-meta-sep"></div> Counterparty: Dev Studio LLC <div class="tx-meta-sep"></div> Seller delivering</div>
+          </div>
+          <div><div class="tx-amount">$7,500</div><div class="tx-amount-sub">ACH · $7,750 total</div></div>
+          <div class="tx-status-wrap"><div class="status-badge sb-escrow"><div class="sb-dot pulse"></div> In Escrow</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ HISTORY PANEL ═══ -->
+    <div class="content-panel" id="panel-history">
+      <div class="section-hdr" style="margin-bottom:1.5rem;">
+        <div class="section-hdr-title" style="font-size:1.2rem;">Transaction History</div>
+      </div>
+      <div class="tx-list">
+        <div class="tx-card">
+          <div class="tx-cat-icon" style="background:rgba(39,168,94,0.08);">🏠</div>
+          <div class="tx-info"><div class="tx-title">Vacation Rental Deposit — Miami, FL</div><div class="tx-meta">TBR-3810029 <div class="tx-meta-sep"></div> Jan 15, 2026 <div class="tx-meta-sep"></div> As: Buyer</div></div>
+          <div><div class="tx-amount">$3,200</div><div class="tx-amount-sub">Wire Transfer</div></div>
+          <div class="tx-status-wrap"><div class="status-badge sb-complete">✓ Complete</div></div>
+        </div>
+        <div class="tx-card">
+          <div class="tx-cat-icon" style="background:rgba(39,168,94,0.08);">🚗</div>
+          <div class="tx-info"><div class="tx-title">2021 Ford F-150 Raptor Purchase</div><div class="tx-meta">TBR-3712004 <div class="tx-meta-sep"></div> Dec 3, 2025 <div class="tx-meta-sep"></div> As: Buyer</div></div>
+          <div><div class="tx-amount">$52,000</div><div class="tx-amount-sub">Wire Transfer</div></div>
+          <div class="tx-status-wrap"><div class="status-badge sb-complete">✓ Complete</div></div>
+        </div>
+        <div class="tx-card">
+          <div class="tx-cat-icon" style="background:rgba(39,168,94,0.08);">💻</div>
+          <div class="tx-info"><div class="tx-title">Shopify Plugin — Full Source Code</div><div class="tx-meta">TBR-3601887 <div class="tx-meta-sep"></div> Nov 20, 2025 <div class="tx-meta-sep"></div> As: Buyer</div></div>
+          <div><div class="tx-amount">$1,800</div><div class="tx-amount-sub">ACH Transfer</div></div>
+          <div class="tx-status-wrap"><div class="status-badge sb-complete">✓ Complete</div></div>
+        </div>
+        <div class="tx-card">
+          <div class="tx-cat-icon" style="background:rgba(229,62,62,0.08);">🎨</div>
+          <div class="tx-info"><div class="tx-title">NFT Collection Rights Purchase</div><div class="tx-meta">TBR-3490022 <div class="tx-meta-sep"></div> Oct 9, 2025 <div class="tx-meta-sep"></div> Resolved via dispute</div></div>
+          <div><div class="tx-amount">$900</div><div class="tx-amount-sub">Crypto / USDC</div></div>
+          <div class="tx-status-wrap"><div class="status-badge sb-complete">✓ Refunded</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ WALLET PANEL ═══ -->
+    <div class="content-panel" id="panel-wallet">
+      <div class="section-hdr" style="margin-bottom:1.5rem;">
+        <div class="section-hdr-title" style="font-size:1.2rem;">Wallet & Payment Methods</div>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title"><div class="card-icon">◎</div>USDC Escrow Wallet (Solana)</div>
+          <p style="font-size:0.83rem;color:var(--text-mid);line-height:1.6;margin-bottom:1rem;">Send USDC on the Solana network to this address to fund any of your active transactions. Always include your Transaction ID in the memo field.</p>
+          <div class="wallet-box" style="margin-bottom:1rem;">
+            <div class="wallet-addr">A7R9bY8ufHM5eUa9TUuiommJvgcsuuiTHha7ZKD3RVws</div>
+            <button class="copy-sm" onclick="copyWallet(this)">Copy</button>
+          </div>
+          <div style="background:rgba(201,154,46,0.08);border:1px solid rgba(201,154,46,0.2);border-radius:8px;padding:0.8rem;font-size:0.78rem;color:#7a5c00;line-height:1.6;">
+            ⚠️ <strong>Solana network only.</strong> Do not send any other token or use any other network. Incorrect sends cannot be recovered.
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><div class="card-icon">🏦</div>Bank Accounts</div>
+          <div style="text-align:center;padding:2rem 1rem;color:var(--text-light);">
+            <div style="font-size:2rem;margin-bottom:0.5rem;">🏦</div>
+            <div style="font-size:0.88rem;font-weight:600;color:var(--navy);margin-bottom:0.3rem;">No bank accounts linked</div>
+            <div style="font-size:0.8rem;margin-bottom:1rem;">Link a bank account for ACH or wire transfer payouts.</div>
+            <button onclick="alert('Bank linking coming soon — contact support@trustbridge.com to add a bank account.')" style="padding:0.65rem 1.4rem;background:linear-gradient(135deg,var(--blue-bright),var(--blue));border:none;border-radius:8px;color:white;font-size:0.85rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">+ Link Bank Account</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ SUPPORT PANEL ═══ -->
+    <div class="content-panel" id="panel-support">
+      <div class="section-hdr" style="margin-bottom:1.5rem;">
+        <div class="section-hdr-title" style="font-size:1.2rem;">Support Center</div>
+      </div>
+      <div class="two-col">
+        <div class="card">
+          <div class="card-title"><div class="card-icon">🎫</div>Open Support Ticket</div>
+          <div style="background:rgba(229,62,62,0.07);border:1px solid rgba(229,62,62,0.2);border-radius:10px;padding:1rem;margin-bottom:1.2rem;font-size:0.82rem;color:#c0392b;line-height:1.6;">
+            <strong>You have 1 open ticket</strong> — Ticket #SUP-8821 regarding transaction TBR-4821903. Our team will respond within 24 hours.
+          </div>
+          <div style="display:flex;flex-direction:column;gap:0.8rem;">
+            <select style="width:100%;padding:0.7rem;border:1.5px solid var(--light-gray);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;">
+              <option>Select issue type...</option>
+              <option>Transaction dispute</option>
+              <option>Payment not received</option>
+              <option>Account verification</option>
+              <option>Technical issue</option>
+              <option>Other</option>
+            </select>
+            <textarea style="width:100%;padding:0.8rem;border:1.5px solid var(--light-gray);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:0.88rem;resize:vertical;min-height:100px;outline:none;" placeholder="Describe your issue in detail..."></textarea>
+            <button onclick="alert('Support ticket submitted. We will respond within 24 hours.')" style="padding:0.75rem;background:linear-gradient(135deg,var(--blue-bright),var(--blue));border:none;border-radius:8px;color:white;font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:700;cursor:pointer;">Submit Ticket</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><div class="card-icon">📚</div>Help Resources</div>
+          <div style="display:flex;flex-direction:column;gap:0.8rem;">
+            <a href="how-it-works.html" style="display:flex;align-items:center;gap:10px;padding:0.9rem;background:var(--off-white);border:1px solid var(--light-gray);border-radius:10px;text-decoration:none;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(36,119,212,0.3)'" onmouseout="this.style.borderColor='var(--light-gray)'">
+              <span style="font-size:1.3rem;">📖</span><div><div style="font-size:0.85rem;font-weight:700;color:var(--navy);">How TrustBridge Works</div><div style="font-size:0.75rem;color:var(--text-light);">Full process explained step by step</div></div>
+            </a>
+            <div style="display:flex;align-items:center;gap:10px;padding:0.9rem;background:var(--off-white);border:1px solid var(--light-gray);border-radius:10px;">
+              <span style="font-size:1.3rem;">📧</span><div><div style="font-size:0.85rem;font-weight:700;color:var(--navy);">Email Support</div><div style="font-size:0.75rem;color:var(--text-light);"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="9ae9efeaeaf5e8eedaeee8efe9eef8e8f3fefdffb4f9f5f7">[email&#160;protected]</a> · 24h response</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /page-content -->
+</div><!-- /main -->
+
+<!-- TX DETAIL MODAL -->
+<div class="modal-overlay" id="txModal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Transaction Details</div>
+      <div class="modal-close" onclick="closeModal()">✕</div>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // ── INIT AUTH ──
+  (async function() {
+    await TBAuthUI.init();
+
+    // Show user's own transactions on the lookup gate
+    const user = TBAuth.getUser();
+    if (!user) return;
+    const txs = await TBAuth.getTransactions();
+    if (!txs.length) return;
+    document.getElementById('userTxHint').style.display = 'block';
+    document.getElementById('userTxHintLabel').textContent = 'Your Transactions (' + user.username + ') — click to load';
+    document.getElementById('userTxList').innerHTML = txs.map(t =>
+      `<span class="lookup-hint-id" onclick="fillAndLookup('${t.id}')">${t.id} — ${t.title || t.category || 'Transaction'}, ${t.status || 'Active'}</span>`
+    ).join('');
+  })();
+
+  // ── LOOKUP GATE ──
+  const validTxIds = ['TBR-4821903', 'TBR-5190234', 'TBR-4920111'];
+
+  const txDatabase = {
+    'TBR-4821903': { name: 'Sale of premium-domain.com', status: 'Inspection Period' },
+    'TBR-5190234': { name: 'Rolex Submariner 2023', status: 'Awaiting Payment' },
+    'TBR-4920111': { name: 'SaaS App IP Transfer', status: 'In Escrow' }
+  };
+
+  async function lookupTransaction() {
+    const input = document.getElementById('txIdInput').value.trim().toUpperCase();
+    const normalized = input.startsWith('TBR-') ? input : (input ? 'TBR-' + input : '');
+    const errEl = document.getElementById('lookupError');
+    const inputEl = document.getElementById('txIdInput');
+
+    if (!normalized) {
+      errEl.classList.add('show');
+      inputEl.classList.add('error');
+      return;
+    }
+
+    // Check demo IDs first, then user's own saved transactions
+    let txInfo = null;
+    if (validTxIds.includes(normalized)) {
+      txInfo = txDatabase[normalized];
+    } else {
+      // Check current user's transactions
+      const _userTxs = await TBAuth.getTransactions();
+      const userTx = _userTxs.find(t => t.id === normalized);
+      if (userTx) {
+        txInfo = { name: userTx.title || userTx.category || 'Your Transaction', status: userTx.status || 'Active' };
+      }
+    }
+
+    if (!txInfo) {
+      errEl.classList.add('show');
+      inputEl.classList.add('error');
+      return;
+    }
+
+    // Valid — show dashboard
+    document.getElementById('lookupGate').classList.add('hidden');
+    document.getElementById('sidebarTxId').textContent = normalized;
+
+    const panelTitles = {
+      overview: ['Dashboard Overview', normalized + ' · ' + txInfo.status],
+      transactions: ['My Transactions', '3 active transactions'],
+      history: ['Transaction History', '4 completed transactions'],
+      wallet: ['Wallet & Payments', 'Manage your payment methods'],
+      support: ['Support Center', '1 open support ticket']
+    };
+    window._panelTitles = panelTitles;
+    document.getElementById('topbarTitle').textContent = 'Dashboard Overview';
+    document.getElementById('topbarSub').textContent = normalized + ' · ' + txInfo.status;
+  }
+
+  function fillAndLookup(id) {
+    document.getElementById('txIdInput').value = id;
+    lookupTransaction();
+  }
+
+  function clearLookupError() {
+    document.getElementById('lookupError').classList.remove('show');
+    document.getElementById('txIdInput').classList.remove('error');
+  }
+
+  function exitDashboard() {
+    document.getElementById('lookupGate').classList.remove('hidden');
+    document.getElementById('txIdInput').value = '';
+    clearLookupError();
+  }
+
+  // ── PANEL NAVIGATION ──
+  const defaultPanelTitles = {
+    overview: ['Dashboard Overview', 'Friday, February 20 2026'],
+    transactions: ['My Transactions', '3 active transactions'],
+    history: ['Transaction History', '4 completed transactions'],
+    wallet: ['Wallet & Payments', 'Manage your payment methods'],
+    support: ['Support Center', '1 open support ticket']
+  };
+
+  function showPanel(id) {
+    document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => {
+      if (n.textContent.trim().toLowerCase().includes(id.toLowerCase().replace('-', ' '))) n.classList.add('active');
+    });
+    const titles = window._panelTitles || defaultPanelTitles;
+    const t = titles[id] || [id, ''];
+    document.getElementById('topbarTitle').textContent = t[0];
+    document.getElementById('topbarSub').textContent = t[1];
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  // ── TX FILTER ──
+  function filterTx(status, btn) {
+    document.querySelectorAll('.tx-card[data-status]').forEach(c => {
+      c.style.display = (status === 'all' || c.dataset.status === status) ? 'flex' : 'none';
+    });
+  }
+
+  // ── TX MODAL DATA ──
+  const txData = {
+    tx1: {
+      title: 'Sale of premium-domain.com',
+      status: '<span class="status-badge sb-inspection"><span class="sb-dot pulse"></span> Inspection Period</span>',
+      rows: [
+        {k:'Transaction ID', v:'TBR-4821903'},
+        {k:'Category', v:'Domain Name'},
+        {k:'Amount', v:'$24,500.00 USD'},
+        {k:'USDC Amount Sent', v:'24,750.00 USDC'},
+        {k:'Escrow Fee', v:'$250.00 (Buyer pays)'},
+        {k:'Your Role', v:'Buyer'},
+        {k:'Counterparty', v:'Sarah R. (sarah@example.com)'},
+        {k:'Payment Method', v:'USDC · Solana Network'},
+        {k:'Inspection Period', v:'7 days (5 remaining)'},
+        {k:'Started', v:'Feb 17, 2026'},
+      ],
+      progress: ['done','done','done','active','pending'],
+      progressLabels: ['Terms agreed','Payment received','Seller delivered','Buyer inspection','Funds released'],
+      actions: [
+        {label:'✅ Approve & Release Funds', cls:'mb-primary', fn:"approveRelease('tx1')"},
+        {label:'⚠️ Raise Dispute', cls:'mb-danger', fn:"raiseDispute('tx1')"},
+      ]
+    },
+    tx2: {
+      title: 'Rolex Submariner 2023',
+      status: '<span class="status-badge sb-awaiting"><span class="sb-dot pulse"></span> Awaiting Payment</span>',
+      rows: [
+        {k:'Transaction ID', v:'TBR-5190234'},
+        {k:'Category', v:'Luxury Goods'},
+        {k:'Amount', v:'$11,200.00 USD'},
+        {k:'USDC to Send', v:'11,450.00 USDC'},
+        {k:'Escrow Fee', v:'$250.00 (Buyer pays)'},
+        {k:'Your Role', v:'Buyer'},
+        {k:'Counterparty', v:'Michael T. (michael@example.com)'},
+        {k:'Payment Method', v:'USDC · Solana Network'},
+        {k:'Inspection Period', v:'3 days'},
+        {k:'Started', v:'Feb 20, 2026'},
+      ],
+      progress: ['done','active','pending','pending','pending'],
+      progressLabels: ['Terms agreed','Send USDC payment','Seller delivers','Buyer inspection','Funds released'],
+      actions: [
+        {label:'💳 Send USDC Payment', cls:'mb-primary', fn:"sendPayment('tx2')"},
+        {label:'Cancel Transaction', cls:'mb-outline', fn:"cancelTx('tx2')"},
+      ]
+    },
+    tx3: {
+      title: 'SaaS App Source Code & IP Transfer',
+      status: '<span class="status-badge sb-escrow"><span class="sb-dot pulse"></span> In Escrow — Seller Delivering</span>',
+      rows: [
+        {k:'Transaction ID', v:'TBR-4920111'},
+        {k:'Category', v:'Tech / Software'},
+        {k:'Amount', v:'$7,500.00 USD'},
+        {k:'Total Paid', v:'$7,750.00 (incl. $250 fee)'},
+        {k:'Escrow Fee', v:'$250.00 (Buyer pays)'},
+        {k:'Your Role', v:'Buyer'},
+        {k:'Counterparty', v:'Dev Studio LLC'},
+        {k:'Payment Method', v:'ACH Bank Transfer'},
+        {k:'Inspection Period', v:'5 days'},
+        {k:'Started', v:'Feb 13, 2026'},
+      ],
+      progress: ['done','done','active','pending','pending'],
+      progressLabels: ['Terms agreed','Payment received','Seller delivering','Buyer inspection','Funds released'],
+      actions: [
+        {label:'Message Seller', cls:'mb-outline', fn:"alert('Messaging coming soon.')"},
+        {label:'Cancel Transaction', cls:'mb-outline', fn:"cancelTx('tx3')"},
+      ]
+    }
+  };
+
+  function openModal(txId) {
+    const tx = txData[txId];
+    document.getElementById('modalTitle').textContent = tx.title;
+
+    let html = `<div style="margin-bottom:1rem;">${tx.status}</div>`;
+
+    html += `<div class="card-title" style="margin-bottom:0.6rem;font-size:0.82rem;"><div class="card-icon">📍</div>Progress</div>`;
+    html += `<div class="progress-track">`;
+    tx.progress.forEach((s,i) => {
+      const isLast = i === tx.progress.length - 1;
+      const cls = s === 'done' ? 'ptd-done' : s === 'active' ? 'ptd-active' : 'ptd-pending';
+      const icon = s === 'done' ? '✓' : s === 'active' ? '→' : i+1;
+      const txtCls = s === 'done' ? 'done' : s === 'active' ? 'active' : '';
+      html += `<div class="pt-step">
+        <div class="pt-left">
+          <div class="pt-dot ${cls}">${icon}</div>
+          ${!isLast ? `<div class="pt-line ${s==='done'?'done':''}"></div>` : ''}
+        </div>
+        <div class="pt-step-text ${txtCls}">${tx.progressLabels[i]}</div>
+      </div>`;
+    });
+    html += `</div>`;
+
+    html += `<div class="card-title" style="margin:1rem 0 0.4rem;font-size:0.82rem;"><div class="card-icon">📋</div>Transaction Details</div>`;
+    tx.rows.forEach(r => { html += `<div class="modal-row"><span class="modal-key">${r.k}</span><span class="modal-val">${r.v}</span></div>`; });
+
+    document.getElementById('modalBody').innerHTML = html;
+    document.getElementById('modalActions').innerHTML = tx.actions.map(a =>
+      `<button class="modal-btn ${a.cls}" onclick="${a.fn}">${a.label}</button>`
+    ).join('');
+
+    document.getElementById('txModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() { document.getElementById('txModal').classList.remove('open'); document.body.style.overflow = ''; }
+  function closeModalOutside(e) { if(e.target.id === 'txModal') closeModal(); }
+
+  function approveRelease(txId) {
+    closeModal();
+    setTimeout(()=>{ alert('✅ Funds approved and released to the seller. Transaction TBR-4821903 is now complete.'); showPanel('history'); },200);
+  }
+  function raiseDispute(txId) {
+    closeModal();
+    setTimeout(()=>{ alert('⚠️ A dispute has been raised. Our mediators will contact both parties within 24 hours. Funds are frozen until the dispute is resolved.'); },200);
+  }
+  function sendPayment(txId) {
+    closeModal();
+    setTimeout(()=>{ window.location.href = 'start-transaction.html'; },200);
+  }
+  function cancelTx(txId) {
+    if(confirm('Are you sure you want to request cancellation? Both parties must agree to cancel.')) {
+      closeModal();
+      setTimeout(()=>{ alert('Cancellation request sent to the other party. The transaction will be cancelled if they agree.'); },200);
+    }
+  }
+
+  // Copy wallet
+  function copyWallet(btn) {
+    navigator.clipboard.writeText('A7R9bY8ufHM5eUa9TUuiommJvgcsuuiTHha7ZKD3RVws').then(() => {
+      const orig = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.style.background = 'var(--green)';
+      setTimeout(() => {
+        btn.textContent = orig;
+        btn.style.background = '';
+      }, 2000);
+    }).catch(() => {
+      alert('Unable to copy. Please copy the address manually.');
+    });
+  }
+
+</script>
+</body>
+</html>

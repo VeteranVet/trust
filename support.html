@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><defs><linearGradient id=%22g%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22><stop offset=%220%25%22 stop-color=%22%232477d4%22/><stop offset=%22100%25%22 stop-color=%22%230ea8a8%22/></linearGradient></defs><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22url(%23g)%22/><path d=%22M50 10 L18 24 L18 48 C18 68 32 85 50 91 C68 85 82 68 82 48 L82 24 Z%22 fill=%22white%22/></svg>" />
+  <title>Support — TrustBridge</title>
+  <link 
+href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" 
+rel="stylesheet" />
+  <script src="auth.js"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: 
+border-box; }
+
+    :root {
+      --navy: #0d2b52;
+      --navy-deep: #071a35;
+      --navy-mid: #163a6e;
+      --blue: #1a5faa;
+      --blue-bright: #2477d4;
+      --teal: #0ea8a8;
+      --white: #ffffff;
+      --off-white: #f4f7fb;
+      --light-gray: #e8edf5;
+      --text-dark: #0d1f3c;
+      --text-mid: #4a5568;
+      --text-light: #8a99b3;
+      --gold: #c99a2e;
+      --green: #27a85e;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text-dark);
+      background: var(--white);
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 1000;
+      background: var(--navy-deep);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem;
+      height: 68px;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--blue-bright), 
+var(--teal));
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-icon svg { width: 20px; height: 20px; fill: white; }
+    .logo-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem; font-weight: 700;
+      color: var(--white);
+      letter-spacing: -0.01em;
+    }
+    .logo-text span { color: var(--teal); }
+    .nav-links {
+      display: flex; align-items: center; gap: 2rem;
+      list-style: none;
+    }
+    .nav-links a {
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      font-size: 0.9rem; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active { color: white; }
+    .nav-actions { display: flex; align-items: center; gap: 1rem; }
+    .btn-primary {
+      padding: 0.55rem 1.3rem;
+      background: linear-gradient(135deg, var(--blue-bright), 
+var(--blue));
+      border: none; border-radius: 6px;
+      color: white; font-size: 0.88rem; font-weight: 600;
+      cursor: pointer; text-decoration: none;
+      transition: opacity 0.2s, transform 0.15s;
+      box-shadow: 0 2px 12px rgba(36,119,212,0.4);
+    }
+    .btn-primary:hover { opacity: 0.92; transform: translateY(-1px); }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      background: var(--navy-deep);
+      padding: 120px 2rem 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .page-header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(26,95,170,0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26,95,170,0.12) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+    .page-header-orb {
+      position: absolute; border-radius: 50%; filter: blur(80px); 
+pointer-events: none;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(14,168,168,0.12) 0%, 
+transparent 70%);
+      top: -100px; left: 50%; transform: translateX(-50%);
+    }
+    .page-header-inner { position: relative; z-index: 2; max-width: 640px; 
+margin: 0 auto; }
+    .page-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(14,168,168,0.15);
+      border: 1px solid rgba(14,168,168,0.3);
+      border-radius: 50px;
+      padding: 6px 16px;
+      font-size: 0.8rem; font-weight: 600;
+      color: var(--teal);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+    }
+    .page-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700;
+      color: white;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+    .page-title span { color: var(--teal); }
+    .page-sub {
+      font-size: 1rem; font-weight: 300;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.7;
+    }
+
+    /* ── SUPPORT BODY ── */
+    .support-section {
+      background: var(--off-white);
+      min-height: calc(100vh - 300px);
+      padding: 60px 2rem 80px;
+    }
+    .support-container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    /* ── FORM CARD ── */
+    .form-card {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid var(--light-gray);
+      box-shadow: 0 4px 32px rgba(13,43,82,0.08);
+      overflow: hidden;
+    }
+    .form-card-header {
+      background: linear-gradient(135deg, var(--navy-deep), 
+var(--navy-mid));
+      padding: 28px 36px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .form-card-icon {
+      width: 46px; height: 46px;
+      background: rgba(14,168,168,0.2);
+      border: 1px solid rgba(14,168,168,0.35);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem;
+    }
+    .form-card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem; font-weight: 600;
+      color: white;
+    }
+    .form-card-subtitle {
+      font-size: 0.85rem; color: rgba(255,255,255,0.55); margin-top: 2px;
+    }
+    .form-body { padding: 36px; }
+
+    /* ── FORM ELEMENTS ── */
+    .form-group { margin-bottom: 24px; }
+    .form-group:last-of-type { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-size: 0.85rem; font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+      letter-spacing: 0.01em;
+    }
+    label .required { color: #e53e3e; margin-left: 3px; }
+    label .optional {
+      font-size: 0.75rem; font-weight: 400;
+      color: var(--text-light); margin-left: 6px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid var(--light-gray);
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      color: var(--text-dark);
+      background: var(--off-white);
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+      appearance: none;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--blue-bright);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(36,119,212,0.12);
+    }
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg 
+xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 
+8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a99b3' stroke-width='1.8' 
+fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 40px;
+      cursor: pointer;
+    }
+    textarea { resize: vertical; min-height: 130px; line-height: 1.6; }
+
+    /* ── ISSUE TYPE CARDS ── */
+    .issue-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .issue-option {
+      position: relative;
+    }
+    .issue-option input[type="radio"] {
+      position: absolute; opacity: 0; width: 0; height: 0;
+    }
+    .issue-label {
+      display: flex; align-items: center; gap: 10px;
+      padding: 13px 16px;
+      border: 1.5px solid var(--light-gray);
+      border-radius: 10px;
+      cursor: pointer;
+      background: var(--off-white);
+      transition: all 0.18s;
+      font-size: 0.88rem; font-weight: 500;
+      color: var(--text-mid);
+    }
+    .issue-label:hover {
+      border-color: var(--blue-bright);
+      background: rgba(36,119,212,0.04);
+      color: var(--text-dark);
+    }
+    .issue-option input[type="radio"]:checked + .issue-label {
+      border-color: var(--blue-bright);
+      background: rgba(36,119,212,0.07);
+      color: var(--blue-bright);
+      box-shadow: 0 0 0 3px rgba(36,119,212,0.1);
+    }
+    .issue-icon { font-size: 1.1rem; }
+
+    /* ── DIVIDER ── */
+    .form-divider {
+      border: none;
+      border-top: 1px solid var(--light-gray);
+      margin: 28px 0;
+    }
+    .form-section-label {
+      font-size: 0.75rem; font-weight: 700;
+      color: var(--text-light);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    /* ── CONTACT ROW ── */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    /* ── PRIORITY ── */
+    .priority-row {
+      display: flex; gap: 10px;
+    }
+    .priority-option { flex: 1; position: relative; }
+    .priority-option input[type="radio"] { position: absolute; opacity: 0; 
+width: 0; height: 0; }
+    .priority-label {
+      display: flex; align-items: center; justify-content: center; gap: 
+6px;
+      padding: 10px 8px;
+      border: 1.5px solid var(--light-gray);
+      border-radius: 8px;
+      cursor: pointer;
+      background: var(--off-white);
+      transition: all 0.18s;
+      font-size: 0.82rem; font-weight: 600;
+      color: var(--text-mid);
+      text-align: center;
+    }
+    .priority-label:hover { border-color: var(--blue); background: 
+rgba(26,95,170,0.04); }
+    .priority-option input:checked + .priority-label.low  { border-color: 
+var(--green); background: rgba(39,168,94,0.08); color: var(--green); 
+box-shadow: 0 0 0 3px rgba(39,168,94,0.1); }
+    .priority-option input:checked + .priority-label.med  { border-color: 
+var(--gold); background: rgba(201,154,46,0.08); color: var(--gold); 
+box-shadow: 0 0 0 3px rgba(201,154,46,0.1); }
+    .priority-option input:checked + .priority-label.high { border-color: 
+#e53e3e; background: rgba(229,62,62,0.08); color: #e53e3e; box-shadow: 0 0 
+0 3px rgba(229,62,62,0.1); }
+
+    /* ── SUBMIT ── */
+    .form-footer {
+      margin-top: 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .form-note {
+      font-size: 0.8rem;
+      color: var(--text-light);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .form-note svg { flex-shrink: 0; }
+    .btn-submit {
+      padding: 0.85rem 2.2rem;
+      background: linear-gradient(135deg, var(--blue-bright), 
+var(--blue));
+      border: none; border-radius: 8px;
+      color: white; font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem; font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(36,119,212,0.4);
+      transition: all 0.2s;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 
+28px rgba(36,119,212,0.45); }
+    .btn-submit:active { transform: translateY(0); }
+
+    /* ── SUCCESS STATE ── */
+    .success-state {
+      display: none;
+      text-align: center;
+      padding: 60px 36px;
+    }
+    .success-icon {
+      width: 72px; height: 72px;
+      background: rgba(39,168,94,0.12);
+      border: 2px solid rgba(39,168,94,0.3);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 24px;
+    }
+    .success-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem; font-weight: 700;
+      color: var(--text-dark);
+      margin-bottom: 12px;
+    }
+    .success-sub {
+      font-size: 0.95rem; color: var(--text-mid);
+      line-height: 1.7; max-width: 420px; margin: 0 auto 28px;
+    }
+    .ticket-box {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--off-white);
+      border: 1px solid var(--light-gray);
+      border-radius: 10px;
+      padding: 14px 24px;
+      font-size: 0.9rem;
+      color: var(--text-mid);
+      margin-bottom: 28px;
+    }
+    .ticket-id { font-weight: 700; color: var(--blue-bright); font-size: 
+1rem; }
+    .btn-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 0.75rem 1.8rem;
+      background: transparent;
+      border: 1.5px solid var(--light-gray);
+      border-radius: 8px;
+      color: var(--text-mid);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem; font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-back:hover { border-color: var(--blue); color: var(--blue); }
+
+    /* ── QUICK HELP CARDS ── */
+    .quick-help {
+      margin-top: 40px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .quick-card {
+      background: white;
+      border: 1px solid var(--light-gray);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .quick-card:hover { box-shadow: 0 4px 20px rgba(13,43,82,0.1); 
+transform: translateY(-2px); }
+    .quick-card-icon { font-size: 1.6rem; margin-bottom: 10px; }
+    .quick-card-title { font-size: 0.9rem; font-weight: 600; color: 
+var(--text-dark); margin-bottom: 6px; }
+    .quick-card-desc { font-size: 0.8rem; color: var(--text-light); 
+line-height: 1.5; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--navy-deep);
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+    .footer-inner { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+    .footer-bottom {
+      padding: 24px 0;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .footer-bottom p { font-size: 0.8rem; color: rgba(255,255,255,0.35); }
+    .footer-badges { display: flex; gap: 8px; }
+    .badge-pill {
+      padding: 4px 12px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 50px;
+      font-size: 0.72rem; font-weight: 600;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.03em;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      .issue-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .quick-help { grid-template-columns: 1fr; }
+      .form-footer { flex-direction: column; align-items: stretch; }
+      .btn-submit { justify-content: center; }
+      .form-body { padding: 24px; }
+      .form-card-header { padding: 20px 24px; }
+      .priority-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 
+9-12V5L12 1zm0 4.9l5 2.23V11c0 3.46-2.38 6.69-5 
+7.93-2.62-1.24-5-4.47-5-7.93V8.13L12 5.9z"/>
+        </svg>
+      </div>
+      <span class="logo-text">Trust<span>Bridge</span></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="index.html#how-it-works">How It Works</a></li>
+      <li><a href="index.html#services">Services</a></li>
+      <li><a href="dashboard.html">Dashboard</a></li>
+      <li><a href="support.html" class="active">Support</a></li>
+    </ul>
+    <div class="nav-actions">
+      <div id="tb-nav-auth" style="display:flex;align-items:center;gap:0.7rem;"></div>
+      <a href="start-transaction.html" class="btn-primary">Start 
+Transaction</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ── PAGE HEADER ── -->
+<div class="page-header">
+  <div class="page-header-orb"></div>
+  <div class="page-header-inner">
+    <div class="page-badge">🛟 &nbsp;Customer Support</div>
+    <h1 class="page-title">How Can We <span>Help You?</span></h1>
+    <p class="page-sub">Our support team is available 24/7. Submit a 
+ticket below and we'll get back to you within one business hour.</p>
+  </div>
+</div>
+
+<!-- ── SUPPORT BODY ── -->
+<section class="support-section">
+  <div class="support-container">
+
+    <!-- FORM CARD -->
+    <div class="form-card" id="supportCard">
+
+      <!-- HEADER -->
+      <div class="form-card-header">
+        <div class="form-card-icon">📋</div>
+        <div>
+          <div class="form-card-title">Submit a Support Request</div>
+          <div class="form-card-subtitle">Fill out the form below — the 
+more detail, the faster we can help.</div>
+        </div>
+      </div>
+
+      <!-- FORM BODY -->
+      <div class="form-body" id="formBody">
+        <form id="supportForm" novalidate>
+
+          <!-- ISSUE TYPE -->
+          <div class="form-group">
+            <label>What's your issue? <span 
+class="required">*</span></label>
+            <div class="issue-grid">
+              <div class="issue-option">
+                <input type="radio" name="issue" id="issue-dispute" 
+value="Dispute a Transaction" required>
+                <label class="issue-label" for="issue-dispute">
+                  <span class="issue-icon">⚖️</span> Dispute a Transaction
+                </label>
+              </div>
+              <div class="issue-option">
+                <input type="radio" name="issue" id="issue-funds" 
+value="Didn't Receive My Funds">
+                <label class="issue-label" for="issue-funds">
+                  <span class="issue-icon">💸</span> Didn't Receive My 
+Funds
+                </label>
+              </div>
+              <div class="issue-option">
+                <input type="radio" name="issue" id="issue-refund" 
+value="Request a Refund">
+                <label class="issue-label" for="issue-refund">
+                  <span class="issue-icon">🔄</span> Request a Refund
+                </label>
+              </div>
+              <div class="issue-option">
+                <input type="radio" name="issue" id="issue-verify" 
+value="Identity Verification Issue">
+                <label class="issue-label" for="issue-verify">
+                  <span class="issue-icon">🪪</span> Identity Verification 
+Issue
+                </label>
+              </div>
+              <div class="issue-option">
+                <input type="radio" name="issue" id="issue-delay" 
+value="Transaction Delayed">
+                <label class="issue-label" for="issue-delay">
+                  <span class="issue-icon">⏳</span> Transaction Delayed
+                </label>
+              </div>
+              <div class="issue-option">
+                <input type="radio" name="issue" id="issue-account" 
+value="Account / Login Issue">
+                <label class="issue-label" for="issue-account">
+                  <span class="issue-icon">🔐</span> Account / Login Issue
+                </label>
+              </div>
+              <div class="issue-option">
+                <input type="radio" name="issue" id="issue-fraud" 
+value="Suspected Fraud or Scam">
+                <label class="issue-label" for="issue-fraud">
+                  <span class="issue-icon">🚨</span> Suspected Fraud or 
+Scam
+                </label>
+              </div>
+              <div class="issue-option">
+                <input type="radio" name="issue" id="issue-other" 
+value="Other">
+                <label class="issue-label" for="issue-other">
+                  <span class="issue-icon">💬</span> Other / General 
+Inquiry
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- TRANSACTION ID -->
+          <div class="form-group" style="margin-top: 24px;">
+            <label for="txnId">Transaction ID <span class="optional">(if 
+applicable)</span></label>
+            <input type="text" id="txnId" name="txnId" placeholder="e.g. 
+TXN-20250815-XXXXXX" autocomplete="off" />
+          </div>
+
+          <!-- PRIORITY -->
+          <div class="form-group">
+            <label>Priority Level <span class="required">*</span></label>
+            <div class="priority-row">
+              <div class="priority-option">
+                <input type="radio" name="priority" id="priority-low" 
+value="Low" required>
+                <label class="priority-label low" for="priority-low">🟢 
+&nbsp;Low</label>
+              </div>
+              <div class="priority-option">
+                <input type="radio" name="priority" id="priority-med" 
+value="Medium" checked>
+                <label class="priority-label med" for="priority-med">🟡 
+&nbsp;Medium</label>
+              </div>
+              <div class="priority-option">
+                <input type="radio" name="priority" id="priority-high" 
+value="High">
+                <label class="priority-label high" for="priority-high">🔴 
+&nbsp;High / Urgent</label>
+              </div>
+            </div>
+          </div>
+
+          <hr class="form-divider" />
+          <p class="form-section-label">Issue Summary</p>
+
+          <!-- SUMMARY -->
+          <div class="form-group">
+            <label for="summary">Describe Your Issue <span 
+class="required">*</span></label>
+            <textarea id="summary" name="summary" placeholder="Please 
+provide as much detail as possible — what happened, when it occurred, what 
+you were expecting vs. what actually happened..." required></textarea>
+          </div>
+
+          <hr class="form-divider" />
+          <p class="form-section-label">Your Contact Details</p>
+
+          <!-- NAME + EMAIL -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="fullName">Full Name <span 
+class="required">*</span></label>
+              <input type="text" id="fullName" name="fullName" 
+placeholder="Jane Smith" required autocomplete="name" />
+            </div>
+            <div class="form-group">
+              <label for="email">Email Address <span 
+class="required">*</span></label>
+              <input type="email" id="email" name="email" 
+placeholder="jane@example.com" required autocomplete="email" />
+            </div>
+          </div>
+
+          <!-- PHONE + PREFERRED CONTACT -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="phone">Phone Number <span 
+class="optional">(optional)</span></label>
+              <input type="tel" id="phone" name="phone" placeholder="+1 
+(555) 000-0000" autocomplete="tel" />
+            </div>
+            <div class="form-group">
+              <label for="contactMethod">Preferred Contact Method <span 
+class="required">*</span></label>
+              <select id="contactMethod" name="contactMethod" required>
+                <option value="" disabled selected>Select 
+method...</option>
+                <option value="Email">Email</option>
+                <option value="Phone">Phone Call</option>
+                <option value="SMS">SMS / Text</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- ERROR MSG -->
+          <p id="formError" style="display:none; color:#e53e3e; 
+font-size:0.85rem; margin-top:8px; padding: 10px 14px; background: 
+rgba(229,62,62,0.07); border-radius:8px; border-left: 3px solid 
+#e53e3e;"></p>
+
+          <!-- FOOTER -->
+          <div class="form-footer">
+            <div class="form-note">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" 
+stroke="#8a99b3" stroke-width="2" stroke-linecap="round">
+                <rect x="3" y="11" width="18" height="11" rx="2"/><path 
+d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+              Your information is encrypted and secure.
+            </div>
+            <button type="submit" class="btn-submit" id="submitBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" 
+stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 
+2 15 22 11 13 2 9 22 2"/>
+              </svg>
+              Submit Request
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- SUCCESS STATE -->
+      <div class="success-state" id="successState">
+        <div class="success-icon">✅</div>
+        <div class="success-title">Request Submitted!</div>
+        <p class="success-sub">We've received your support request and a 
+member of our team will be in touch shortly. Please keep an eye on your 
+inbox.</p>
+        <div class="ticket-box">
+          🎫 &nbsp;Your Ticket ID: &nbsp;<span class="ticket-id" 
+id="ticketIdDisplay"></span>
+        </div>
+        <br />
+        <a href="index.html" class="btn-back">
+          ← Back to Home
+        </a>
+      </div>
+
+    </div>
+
+    <!-- QUICK HELP CARDS -->
+    <div class="quick-help">
+      <div class="quick-card">
+        <div class="quick-card-icon">📞</div>
+        <div class="quick-card-title">Phone Support</div>
+        <div class="quick-card-desc">Available Mon–Fri, 9am–6pm 
+EST<br>1-800-TRUSTBRIDGE</div>
+      </div>
+      <div class="quick-card">
+        <div class="quick-card-icon">⏱️</div>
+        <div class="quick-card-title">Response Time</div>
+        <div class="quick-card-desc">Tickets typically answered within 1 
+business hour during operating hours.</div>
+      </div>
+      <div class="quick-card">
+        <div class="quick-card-icon">🔍</div>
+        <div class="quick-card-title">Track Your Transaction</div>
+        <div class="quick-card-desc">Use the <a href="dashboard.html" 
+style="color:var(--blue-bright); text-decoration:none; 
+font-weight:500;">Dashboard</a> to check your transaction status in real 
+time.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-bottom">
+      <p>© 2025 TrustBridge Financial Services, Inc. All rights reserved. 
+TrustBridge is a licensed escrow service.</p>
+      <div class="footer-badges">
+        <span class="badge-pill">SSL Secured</span>
+        <span class="badge-pill">FDIC Insured</span>
+        <span class="badge-pill">Licensed</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (async function(){ await TBAuthUI.init(); })();
+
+  // Generate a random ticket ID
+  function generateTicketId() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let id = 'TKT-';
+    for (let i = 0; i < 8; i++) {
+      id += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return id;
+  }
+
+  const form = document.getElementById('supportForm');
+  const formBody = document.getElementById('formBody');
+  const successState = document.getElementById('successState');
+  const formError = document.getElementById('formError');
+  const submitBtn = document.getElementById('submitBtn');
+
+  function showError(msg) {
+    formError.textContent = msg;
+    formError.style.display = 'block';
+    formError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function hideError() {
+    formError.style.display = 'none';
+  }
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    hideError();
+
+    // Validate issue selection
+    const issue = document.querySelector('input[name="issue"]:checked');
+    if (!issue) {
+      showError('Please select the type of issue you\'re experiencing.');
+      return;
+    }
+
+    // Validate summary
+    const summary = document.getElementById('summary').value.trim();
+    if (!summary || summary.length < 20) {
+      showError('Please provide a more detailed description of your issue 
+(at least 20 characters).');
+      return;
+    }
+
+    // Validate name
+    const fullName = document.getElementById('fullName').value.trim();
+    if (!fullName) {
+      showError('Please enter your full name.');
+      return;
+    }
+
+    // Validate email
+    const email = document.getElementById('email').value.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      showError('Please enter a valid email address.');
+      return;
+    }
+
+    // Validate contact method
+    const contactMethod = document.getElementById('contactMethod').value;
+    if (!contactMethod) {
+      showError('Please select your preferred contact method.');
+      return;
+    }
+
+    // Simulate submission
+    submitBtn.textContent = 'Submitting...';
+    submitBtn.disabled = true;
+
+    setTimeout(() => {
+      const ticketId = generateTicketId();
+      document.getElementById('ticketIdDisplay').textContent = ticketId;
+      formBody.style.display = 'none';
+      successState.style.display = 'block';
+    }, 1200);
+  });
+</script>
+
+</body>
+</html>

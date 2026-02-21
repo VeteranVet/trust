@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><defs><linearGradient id=%22g%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22><stop offset=%220%25%22 stop-color=%22%232477d4%22/><stop offset=%22100%25%22 stop-color=%22%230ea8a8%22/></linearGradient></defs><rect width=%22100%22 height=%22100%22 rx=%2218%22 fill=%22url(%23g)%22/><path d=%22M50 10 L18 24 L18 48 C18 68 32 85 50 91 C68 85 82 68 82 48 L82 24 Z%22 fill=%22white%22/></svg>" />
+  <title>How It Works — TrustBridge</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="auth.js"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --navy: #0d2b52; --navy-deep: #071a35; --navy-mid: #163a6e;
+      --blue: #1a5faa; --blue-bright: #2477d4; --teal: #0ea8a8;
+      --white: #fff; --off-white: #f4f7fb; --light-gray: #e8edf5;
+      --text-dark: #0d1f3c; --text-mid: #4a5568; --text-light: #8a99b3;
+      --green: #27a85e; --gold: #c99a2e;
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'DM Sans', sans-serif; color: var(--text-dark); background: var(--white); overflow-x: hidden; }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: var(--navy-deep); border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; height: 68px; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--blue-bright), var(--teal)); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .logo-icon svg { width: 20px; height: 20px; fill: white; }
+    .logo-text { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: white; }
+    .logo-text span { color: var(--teal); }
+    .nav-links { display: flex; align-items: center; gap: 2rem; list-style: none; }
+    .nav-links a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color: white; }
+    .nav-actions { display: flex; gap: 1rem; align-items: center; }
+    .btn-primary { padding: 0.55rem 1.3rem; background: linear-gradient(135deg, var(--blue-bright), var(--blue)); border: none; border-radius: 6px; color: white; font-size: 0.88rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.2s; box-shadow: 0 2px 12px rgba(36,119,212,0.4); }
+    .btn-primary:hover { opacity: 0.92; transform: translateY(-1px); }
+
+    /* HERO */
+    .hero { padding: 130px 0 80px; background: var(--navy-deep); position: relative; overflow: hidden; text-align: center; }
+    .hero::before { content:''; position:absolute; inset:0; background-image:linear-gradient(rgba(26,95,170,0.1) 1px,transparent 1px),linear-gradient(90deg,rgba(26,95,170,0.1) 1px,transparent 1px); background-size:55px 55px; }
+    .hero-orb { position:absolute; border-radius:50%; filter:blur(80px); pointer-events:none; }
+    .hero-orb-1 { width:600px;height:400px;background:radial-gradient(circle,rgba(36,119,212,0.2) 0%,transparent 65%); top:-100px;left:50%;transform:translateX(-50%); }
+    .hero-inner { position:relative; z-index:1; max-width:700px; margin:0 auto; padding:0 2rem; }
+    .hero-badge { display:inline-flex;align-items:center;gap:8px;background:rgba(14,168,168,0.15);border:1px solid rgba(14,168,168,0.3);border-radius:50px;padding:6px 16px;font-size:0.78rem;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:1.5rem; }
+    .hero-title { font-family:'Playfair Display',serif; font-size:clamp(2rem,4vw,3.2rem); font-weight:700; color:white; line-height:1.15; margin-bottom:1rem; }
+    .hero-title span { color:var(--teal); }
+    .hero-sub { font-size:1.05rem; color:rgba(255,255,255,0.6); line-height:1.7; margin-bottom:2.5rem; }
+    .hero-ctas { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; }
+    .btn-cta { padding:0.85rem 2rem; background:linear-gradient(135deg,var(--blue-bright),var(--blue)); border:none; border-radius:8px; color:white; font-size:0.95rem; font-weight:700; cursor:pointer; text-decoration:none; box-shadow:0 4px 20px rgba(36,119,212,0.4); transition:all 0.2s; }
+    .btn-cta:hover { transform:translateY(-2px); }
+    .btn-cta-outline { padding:0.85rem 2rem; background:transparent; border:1px solid rgba(255,255,255,0.3); border-radius:8px; color:white; font-size:0.95rem; font-weight:500; cursor:pointer; text-decoration:none; transition:all 0.2s; }
+    .btn-cta-outline:hover { border-color:white; }
+
+    /* SECTION BASICS */
+    .section { padding: 6rem 0; }
+    .section-inner { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+    .section-label { font-size:0.78rem; font-weight:700; color:var(--blue-bright); text-transform:uppercase; letter-spacing:0.12em; margin-bottom:0.8rem; }
+    .section-title { font-family:'Playfair Display',serif; font-size:clamp(1.8rem,3vw,2.6rem); font-weight:700; color:var(--navy); line-height:1.2; margin-bottom:1rem; }
+    .section-sub { font-size:0.98rem; color:var(--text-mid); line-height:1.7; max-width:540px; margin-bottom:3.5rem; }
+
+    /* STEP-BY-STEP TIMELINE */
+    .timeline { position:relative; }
+    .timeline::before { content:''; position:absolute; left:35px; top:0; bottom:0; width:2px; background:linear-gradient(180deg,var(--blue-bright),var(--teal)); }
+    .timeline-step { display:flex; gap:2rem; margin-bottom:3.5rem; position:relative; }
+    .timeline-step:last-child { margin-bottom:0; }
+    .tl-left { flex-shrink:0; display:flex; flex-direction:column; align-items:center; }
+    .tl-bubble { width:72px; height:72px; border-radius:50%; background:white; border:3px solid var(--blue-bright); display:flex; align-items:center; justify-content:center; position:relative; z-index:1; box-shadow:0 0 0 6px var(--off-white); flex-shrink:0; transition:all 0.3s; }
+    .timeline-step:hover .tl-bubble { box-shadow:0 0 0 10px rgba(36,119,212,0.08); }
+    .tl-num { font-family:'Playfair Display',serif; font-size:1.4rem; font-weight:700; color:var(--navy); }
+    .tl-icon-badge { position:absolute; bottom:-4px; right:-4px; width:26px; height:26px; border-radius:7px; background:white; border:1.5px solid var(--light-gray); display:flex; align-items:center; justify-content:center; font-size:0.75rem; }
+    .tl-right { padding-top:0.8rem; flex:1; }
+    .tl-title { font-size:1.15rem; font-weight:700; color:var(--navy); margin-bottom:0.5rem; }
+    .tl-desc { font-size:0.9rem; color:var(--text-mid); line-height:1.7; margin-bottom:1rem; }
+    .tl-detail-box { background:var(--off-white); border:1px solid var(--light-gray); border-radius:12px; padding:1.2rem 1.4rem; }
+    .tl-detail-title { font-size:0.8rem; font-weight:700; color:var(--navy); margin-bottom:0.7rem; text-transform:uppercase; letter-spacing:0.06em; }
+    .tl-bullets { display:flex; flex-direction:column; gap:0.5rem; }
+    .tl-bullet { display:flex; align-items:flex-start; gap:8px; font-size:0.83rem; color:var(--text-mid); line-height:1.5; }
+    .tl-bullet::before { content:'✓'; color:var(--green); font-weight:700; flex-shrink:0; margin-top:1px; }
+
+    /* ROLE EXPLAINER */
+    .roles-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; }
+    .role-card { background:white; border:1px solid var(--light-gray); border-radius:16px; padding:2rem; transition:all 0.3s; }
+    .role-card:hover { transform:translateY(-4px); box-shadow:0 16px 48px rgba(13,43,82,0.1); }
+    .role-card-header { display:flex; align-items:center; gap:12px; margin-bottom:1.2rem; }
+    .role-avatar { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.4rem; }
+    .av-blue { background:rgba(26,95,170,0.1); }
+    .av-teal { background:rgba(14,168,168,0.1); }
+    .role-name { font-size:1.05rem; font-weight:700; color:var(--navy); }
+    .role-tag { font-size:0.75rem; font-weight:600; color:var(--text-light); }
+    .role-steps { display:flex; flex-direction:column; gap:0.7rem; }
+    .role-step { display:flex; align-items:flex-start; gap:10px; font-size:0.85rem; color:var(--text-mid); line-height:1.5; }
+    .role-step-num { width:22px; height:22px; border-radius:50%; background:var(--off-white); border:1.5px solid var(--light-gray); display:flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:700; color:var(--navy); flex-shrink:0; margin-top:1px; }
+
+    /* PROTECTION FEATURES */
+    .features-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.2rem; }
+    .feat-card { background:var(--off-white); border:1px solid var(--light-gray); border-radius:14px; padding:1.6rem; transition:all 0.25s; }
+    .feat-card:hover { background:white; box-shadow:0 8px 32px rgba(13,43,82,0.08); border-color:rgba(36,119,212,0.2); }
+    .feat-icon { font-size:1.8rem; margin-bottom:0.9rem; }
+    .feat-title { font-size:0.95rem; font-weight:700; color:var(--navy); margin-bottom:0.4rem; }
+    .feat-desc { font-size:0.82rem; color:var(--text-mid); line-height:1.6; }
+
+    /* FAQ */
+    .faq-list { display:flex; flex-direction:column; gap:0; max-width:760px; }
+    .faq-item { border-bottom:1px solid var(--light-gray); }
+    .faq-q { display:flex; justify-content:space-between; align-items:center; padding:1.2rem 0; cursor:pointer; gap:1rem; user-select:none; }
+    .faq-q-text { font-size:0.95rem; font-weight:600; color:var(--navy); line-height:1.4; }
+    .faq-chevron { width:28px; height:28px; border-radius:50%; background:var(--off-white); border:1px solid var(--light-gray); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:0.7rem; color:var(--text-mid); transition:all 0.25s; }
+    .faq-item.open .faq-chevron { background:var(--blue-bright); color:white; border-color:var(--blue-bright); transform:rotate(180deg); }
+    .faq-a { font-size:0.87rem; color:var(--text-mid); line-height:1.7; max-height:0; overflow:hidden; transition:max-height 0.35s ease, padding 0.25s; padding:0 0 0; }
+    .faq-item.open .faq-a { max-height:400px; padding-bottom:1.2rem; }
+
+    /* FEE TABLE */
+    .fee-table { width:100%; border-collapse:collapse; font-size:0.88rem; }
+    .fee-table th { text-align:left; padding:0.8rem 1rem; font-size:0.75rem; font-weight:700; color:var(--text-light); text-transform:uppercase; letter-spacing:0.08em; border-bottom:2px solid var(--light-gray); background:var(--off-white); }
+    .fee-table td { padding:0.9rem 1rem; border-bottom:1px solid var(--light-gray); color:var(--text-mid); vertical-align:middle; }
+    .fee-table tr:last-child td { border-bottom:none; }
+    .fee-table tr:hover td { background:var(--off-white); }
+    .fee-badge { display:inline-block; padding:3px 10px; border-radius:50px; font-size:0.72rem; font-weight:700; }
+    .fb-blue { background:rgba(36,119,212,0.1); color:var(--blue); }
+    .fb-teal { background:rgba(14,168,168,0.1); color:var(--teal); }
+    .fb-gold { background:rgba(201,154,46,0.1); color:var(--gold); }
+
+    /* DARK SECTION */
+    .dark-section { background:var(--navy-deep); padding:5rem 0; position:relative; overflow:hidden; }
+    .dark-section::before { content:''; position:absolute; inset:0; background-image:linear-gradient(rgba(26,95,170,0.07) 1px,transparent 1px),linear-gradient(90deg,rgba(26,95,170,0.07) 1px,transparent 1px); background-size:50px 50px; }
+    .dark-section .section-label { color:var(--teal); }
+    .dark-section .section-title { color:white; }
+    .dark-section .section-sub { color:rgba(255,255,255,0.5); }
+    .dark-inner { position:relative; z-index:1; }
+
+    /* CTA STRIP */
+    .cta-strip { padding:5rem 0; background:linear-gradient(135deg,var(--blue) 0%,var(--navy) 100%); text-align:center; position:relative; overflow:hidden; }
+    .cta-strip::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(36,119,212,0.3),transparent); }
+    .cta-strip-inner { position:relative; z-index:1; }
+    .cta-strip h2 { font-family:'Playfair Display',serif; font-size:clamp(1.8rem,3vw,2.6rem); color:white; font-weight:700; margin-bottom:1rem; }
+    .cta-strip p { font-size:1rem; color:rgba(255,255,255,0.65); margin-bottom:2rem; }
+    .cta-btns { display:flex; gap:1rem; justify-content:center; flex-wrap:wrap; }
+    .btn-white { padding:0.9rem 2.2rem; background:white; border:none; border-radius:8px; color:var(--navy); font-size:1rem; font-weight:700; cursor:pointer; text-decoration:none; transition:all 0.2s; box-shadow:0 4px 20px rgba(0,0,0,0.2); }
+    .btn-white:hover { transform:translateY(-2px); }
+    .btn-outline-w { padding:0.9rem 2.2rem; background:transparent; border:1px solid rgba(255,255,255,0.4); border-radius:8px; color:white; font-size:1rem; font-weight:500; cursor:pointer; text-decoration:none; transition:all 0.2s; }
+    .btn-outline-w:hover { border-color:white; }
+
+    /* FOOTER */
+    footer { background:var(--navy-deep); padding:4rem 0 2rem; border-top:1px solid rgba(255,255,255,0.06); }
+    .footer-inner { max-width:1200px; margin:0 auto; padding:0 2rem; }
+    .footer-top { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:3rem; margin-bottom:3rem; }
+    .footer-brand p { font-size:0.875rem; color:rgba(255,255,255,0.4); line-height:1.7; margin-top:1rem; max-width:280px; }
+    .footer-col h4 { font-size:0.82rem; font-weight:700; color:rgba(255,255,255,0.5); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:1rem; }
+    .footer-col a { display:block; font-size:0.875rem; color:rgba(255,255,255,0.55); text-decoration:none; margin-bottom:0.6rem; transition:color 0.2s; }
+    .footer-col a:hover { color:white; }
+    .footer-bottom { border-top:1px solid rgba(255,255,255,0.07); padding-top:1.5rem; display:flex; align-items:center; justify-content:space-between; }
+    .footer-bottom p { font-size:0.8rem; color:rgba(255,255,255,0.3); }
+    .footer-badges { display:flex; gap:10px; }
+    .badge-pill { padding:4px 12px; border:1px solid rgba(255,255,255,0.12); border-radius:50px; font-size:0.7rem; font-weight:600; color:rgba(255,255,255,0.35); }
+
+    /* REVEAL */
+    .reveal { opacity:0; transform:translateY(20px); transition:opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+    .reveal-delay-1 { transition-delay:0.1s; } .reveal-delay-2 { transition-delay:0.2s; } .reveal-delay-3 { transition-delay:0.3s; }
+
+    @media(max-width:900px){ .nav-links{display:none;} .roles-grid{grid-template-columns:1fr;} .features-grid{grid-template-columns:1fr 1fr;} .footer-top{grid-template-columns:1fr 1fr;} }
+    @media(max-width:640px){ .features-grid{grid-template-columns:1fr;} .timeline::before{left:25px;} .tl-bubble{width:52px;height:52px;} }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1zm0 4.9l5 2.23V11c0 3.46-2.38 6.69-5 7.93-2.62-1.24-5-4.47-5-7.93V8.13L12 5.9z"/></svg></div>
+      <span class="logo-text">Trust<span>Bridge</span></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="how-it-works.html" class="active">How it Works</a></li>
+      <li><a href="index.html#services">Services</a></li>
+      <li><a href="#">Support</a></li>
+    </ul>
+    <div class="nav-actions">
+      <div id="tb-nav-auth" style="display:flex;align-items:center;gap:0.7rem;"></div>
+      <a href="start-transaction.html" class="btn-primary">Start a Transaction</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-inner">
+    <div class="hero-badge">📖 Simple & Transparent Process</div>
+    <h1 class="hero-title">How <span>TrustBridge</span><br>Protects Every Deal</h1>
+    <p class="hero-sub">Whether you're buying a business, selling a domain, or closing a vehicle deal — our 5-step escrow process keeps both parties safe from start to finish.</p>
+    <div class="hero-ctas">
+      <a href="start-transaction.html" class="btn-cta">Start a Transaction Now</a>
+      <a href="#steps" class="btn-cta-outline">See the Steps ↓</a>
+    </div>
+  </div>
+</section>
+
+<!-- STEP BY STEP -->
+<section class="section" id="steps" style="background:var(--off-white);">
+  <div class="section-inner">
+    <div class="reveal">
+      <p class="section-label">The Process</p>
+      <h2 class="section-title">Five Steps to a<br>Secure Transaction</h2>
+      <p class="section-sub">Every TrustBridge transaction follows the same proven process — designed to protect both the buyer and seller equally.</p>
+    </div>
+
+    <div class="timeline">
+
+      <div class="timeline-step reveal">
+        <div class="tl-left">
+          <div class="tl-bubble">
+            <span class="tl-num">1</span>
+            <div class="tl-icon-badge">📝</div>
+          </div>
+        </div>
+        <div class="tl-right">
+          <div class="tl-title">Buyer & Seller Agree on Terms</div>
+          <div class="tl-desc">Both parties come to TrustBridge and create a transaction together. You define the item or service, the price, the inspection period, and any special delivery conditions. Everything is documented in writing before any money moves.</div>
+          <div class="tl-detail-box">
+            <div class="tl-detail-title">What gets agreed on</div>
+            <div class="tl-bullets">
+              <div class="tl-bullet">Transaction amount and currency</div>
+              <div class="tl-bullet">Detailed description of what's being bought or sold</div>
+              <div class="tl-bullet">Inspection period length (1–30 days)</div>
+              <div class="tl-bullet">Delivery method and timeline</div>
+              <div class="tl-bullet">Who pays the escrow fee (buyer, seller, or split)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step reveal reveal-delay-1">
+        <div class="tl-left">
+          <div class="tl-bubble">
+            <span class="tl-num">2</span>
+            <div class="tl-icon-badge">💳</div>
+          </div>
+        </div>
+        <div class="tl-right">
+          <div class="tl-title">Buyer Submits Payment to Escrow</div>
+          <div class="tl-desc">The buyer sends their payment directly to TrustBridge's secure, regulated escrow account. Funds are held in FDIC-insured, segregated accounts — completely separate from TrustBridge's operating funds. The seller is notified the moment payment is confirmed.</div>
+          <div class="tl-detail-box">
+            <div class="tl-detail-title">Accepted payment methods</div>
+            <div class="tl-bullets">
+              <div class="tl-bullet">Wire transfer (domestic & international)</div>
+              <div class="tl-bullet">ACH / Bank transfer</div>
+              <div class="tl-bullet">Credit or debit card</div>
+              <div class="tl-bullet">USDC on Solana network (cryptocurrency)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step reveal reveal-delay-2">
+        <div class="tl-left">
+          <div class="tl-bubble">
+            <span class="tl-num">3</span>
+            <div class="tl-icon-badge">📦</div>
+          </div>
+        </div>
+        <div class="tl-right">
+          <div class="tl-title">Seller Delivers Goods or Services</div>
+          <div class="tl-desc">With payment confirmed in escrow, the seller ships the item, transfers the digital asset, or fulfills the agreed service. TrustBridge notifies both parties at each stage. The seller marks delivery as complete once done.</div>
+          <div class="tl-detail-box">
+            <div class="tl-detail-title">Supported transaction types</div>
+            <div class="tl-bullets">
+              <div class="tl-bullet">Physical goods — shipped with tracking number</div>
+              <div class="tl-bullet">Domain names — transferred via registrar</div>
+              <div class="tl-bullet">Digital assets, software, source code</div>
+              <div class="tl-bullet">Services — milestone-based delivery accepted</div>
+              <div class="tl-bullet">Business & real estate — with due diligence period</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step reveal reveal-delay-3">
+        <div class="tl-left">
+          <div class="tl-bubble">
+            <span class="tl-num">4</span>
+            <div class="tl-icon-badge">🔍</div>
+          </div>
+        </div>
+        <div class="tl-right">
+          <div class="tl-title">Buyer Inspects During the Agreed Window</div>
+          <div class="tl-desc">The buyer has the agreed inspection period (from 1 to 30 days) to thoroughly examine what they received. During this window, they can approve the transaction, request changes, or raise a dispute. If no action is taken before the period ends, funds automatically release to the seller.</div>
+          <div class="tl-detail-box">
+            <div class="tl-detail-title">Buyer options during inspection</div>
+            <div class="tl-bullets">
+              <div class="tl-bullet">Approve — funds immediately released to seller</div>
+              <div class="tl-bullet">Request changes — seller can redeliver within the window</div>
+              <div class="tl-bullet">Raise a dispute — TrustBridge mediators step in</div>
+              <div class="tl-bullet">No action — funds auto-release when period expires</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timeline-step reveal">
+        <div class="tl-left">
+          <div class="tl-bubble" style="border-color:var(--green);">
+            <span class="tl-num" style="color:var(--green);">5</span>
+            <div class="tl-icon-badge">✅</div>
+          </div>
+        </div>
+        <div class="tl-right">
+          <div class="tl-title">Funds Released — Deal Complete</div>
+          <div class="tl-desc">Once the buyer approves, TrustBridge immediately releases the funds to the seller. The escrow fee is deducted at this point (or from the buyer's total, depending on what was agreed). Both parties receive confirmation and the transaction is marked complete.</div>
+          <div class="tl-detail-box">
+            <div class="tl-detail-title">Fund release timeline</div>
+            <div class="tl-bullets">
+              <div class="tl-bullet">Wire & ACH — 1–3 business days to seller's account</div>
+              <div class="tl-bullet">USDC/Crypto — within minutes on-chain</div>
+              <div class="tl-bullet">Both parties receive email confirmation</div>
+              <div class="tl-bullet">Transaction record available in your dashboard forever</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- BUYER VS SELLER -->
+<section class="section" style="background:white;">
+  <div class="section-inner">
+    <div class="reveal">
+      <p class="section-label">Your Role</p>
+      <h2 class="section-title">What to Expect as a<br>Buyer or Seller</h2>
+      <p class="section-sub">TrustBridge protects both sides equally — here's exactly what each party needs to do.</p>
+    </div>
+    <div class="roles-grid reveal">
+      <div class="role-card">
+        <div class="role-card-header">
+          <div class="role-avatar av-blue">🛒</div>
+          <div><div class="role-name">As the Buyer</div><div class="role-tag">You control when funds are released</div></div>
+        </div>
+        <div class="role-steps">
+          <div class="role-step"><div class="role-step-num">1</div><span>Create the transaction or receive an invite from the seller</span></div>
+          <div class="role-step"><div class="role-step-num">2</div><span>Review and accept the agreed terms</span></div>
+          <div class="role-step"><div class="role-step-num">3</div><span>Send payment to TrustBridge's secure escrow account</span></div>
+          <div class="role-step"><div class="role-step-num">4</div><span>Wait for the seller to deliver the goods or services</span></div>
+          <div class="role-step"><div class="role-step-num">5</div><span>Inspect and approve — or raise a dispute if needed</span></div>
+          <div class="role-step"><div class="role-step-num">6</div><span>Once approved, the seller receives their payment instantly</span></div>
+        </div>
+      </div>
+      <div class="role-card">
+        <div class="role-card-header">
+          <div class="role-avatar av-teal">📦</div>
+          <div><div class="role-name">As the Seller</div><div class="role-tag">You get paid — guaranteed</div></div>
+        </div>
+        <div class="role-steps">
+          <div class="role-step"><div class="role-step-num">1</div><span>Create the transaction or accept an invite from the buyer</span></div>
+          <div class="role-step"><div class="role-step-num">2</div><span>Review and agree to the transaction terms</span></div>
+          <div class="role-step"><div class="role-step-num">3</div><span>Wait for TrustBridge to confirm buyer's payment is in escrow</span></div>
+          <div class="role-step"><div class="role-step-num">4</div><span>Deliver the item, asset, or service as agreed</span></div>
+          <div class="role-step"><div class="role-step-num">5</div><span>Mark delivery as complete in your dashboard</span></div>
+          <div class="role-step"><div class="role-step-num">6</div><span>Receive your payment once the buyer approves or the inspection window ends</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROTECTIONS -->
+<section class="section" style="background:var(--off-white);">
+  <div class="section-inner">
+    <div class="reveal">
+      <p class="section-label">Why TrustBridge</p>
+      <h2 class="section-title">Every Layer of<br>Protection, Explained</h2>
+      <p class="section-sub">We've built multiple layers of security into every transaction so neither party ever has to take it on faith.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feat-card reveal reveal-delay-1"><div class="feat-icon">🏦</div><div class="feat-title">FDIC-Insured Escrow Accounts</div><div class="feat-desc">All funds are held in fully regulated, FDIC-insured accounts — the same protection as a traditional bank. Your money is safe even if TrustBridge were to cease operations.</div></div>
+      <div class="feat-card reveal reveal-delay-2"><div class="feat-icon">🔐</div><div class="feat-title">256-bit SSL Encryption</div><div class="feat-desc">Every transaction, communication, and personal data point is encrypted with the same industry-standard 256-bit SSL encryption used by global financial institutions.</div></div>
+      <div class="feat-card reveal reveal-delay-3"><div class="feat-icon">🆔</div><div class="feat-title">Identity Verification</div><div class="feat-desc">Both parties undergo identity verification before high-value transactions proceed. This prevents fraud and ensures you always know who you're dealing with.</div></div>
+      <div class="feat-card reveal reveal-delay-1"><div class="feat-icon">⚖️</div><div class="feat-title">Licensed Dispute Resolution</div><div class="feat-desc">If a dispute arises, our professionally licensed mediators review all evidence submitted by both sides and issue a fair, binding determination within 10 business days.</div></div>
+      <div class="feat-card reveal reveal-delay-2"><div class="feat-icon">🔔</div><div class="feat-title">Real-Time Notifications</div><div class="feat-desc">Both parties receive email and in-app notifications at every stage — payment confirmed, delivery marked, inspection started, funds released. No surprises.</div></div>
+      <div class="feat-card reveal reveal-delay-3"><div class="feat-icon">📜</div><div class="feat-title">Legally Binding Agreement</div><div class="feat-desc">Every TrustBridge transaction is backed by a legally binding escrow agreement, signed by both parties. This creates an enforceable record of the deal terms.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEE TABLE -->
+<section class="section" style="background:white;">
+  <div class="section-inner">
+    <div class="reveal">
+      <p class="section-label">Transparent Pricing</p>
+      <h2 class="section-title">Simple, Flat Fees.<br>No Surprises.</h2>
+      <p class="section-sub">TrustBridge charges a flat $250 escrow fee per transaction — regardless of transaction size. Plus a small payment processing fee depending on how you pay.</p>
+    </div>
+    <div class="reveal" style="overflow-x:auto; border:1px solid var(--light-gray); border-radius:16px; overflow:hidden;">
+      <table class="fee-table">
+        <thead>
+          <tr>
+            <th>Payment Method</th>
+            <th>Escrow Fee</th>
+            <th>Processing Fee</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="fee-badge fb-blue">Wire Transfer</span></td>
+            <td><strong>$250.00 flat</strong></td>
+            <td>$30.00</td>
+            <td>Domestic & international supported</td>
+          </tr>
+          <tr>
+            <td><span class="fee-badge fb-blue">ACH / Bank Transfer</span></td>
+            <td><strong>$250.00 flat</strong></td>
+            <td>Free</td>
+            <td>US accounts only · 2–3 business days</td>
+          </tr>
+          <tr>
+            <td><span class="fee-badge fb-gold">Credit / Debit Card</span></td>
+            <td><strong>$250.00 flat</strong></td>
+            <td>2.9% + $0.30</td>
+            <td>Visa, Mastercard, Amex accepted</td>
+          </tr>
+          <tr>
+            <td><span class="fee-badge fb-teal">USDC (Solana)</span></td>
+            <td><strong>$250.00 flat</strong></td>
+            <td>1.0%</td>
+            <td>Solana network only · Near-instant</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:0.8rem;color:var(--text-light);margin-top:1rem;">* All fees shown in USD. Escrow fee may be paid by buyer, seller, or split — as agreed during transaction setup.</p>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="background:var(--off-white);">
+  <div class="section-inner">
+    <div class="reveal">
+      <p class="section-label">FAQ</p>
+      <h2 class="section-title">Common Questions</h2>
+      <p class="section-sub">Everything you need to know before your first transaction.</p>
+    </div>
+    <div class="faq-list reveal">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">What happens if the seller doesn't deliver?</span>
+          <div class="faq-chevron">▼</div>
+        </div>
+        <div class="faq-a">If the seller fails to deliver within the agreed timeframe, the buyer can raise a dispute. Our mediators will review the situation and, if the seller is found to be in breach of the agreement, the funds will be fully refunded to the buyer. TrustBridge never releases funds without delivery confirmation or buyer approval.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">What happens if the buyer refuses to approve?</span>
+          <div class="faq-chevron">▼</div>
+        </div>
+        <div class="faq-a">If the buyer does not take any action during the inspection period, funds automatically release to the seller once the inspection window expires. If the buyer opens a dispute, our licensed mediators review all evidence. If the goods or services were delivered as agreed, TrustBridge will release funds to the seller.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">How do I know TrustBridge won't just keep my money?</span>
+          <div class="faq-chevron">▼</div>
+        </div>
+        <div class="faq-a">TrustBridge is a fully licensed and regulated escrow service. All client funds are held in segregated, FDIC-insured accounts entirely separate from our operational accounts. This means we legally cannot use client funds for any purpose other than the intended transaction. Our licensing and compliance documentation is available on request.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">Can I cancel a transaction once it's started?</span>
+          <div class="faq-chevron">▼</div>
+        </div>
+        <div class="faq-a">Yes — either party can request a cancellation before the seller marks delivery as complete. Both parties must agree to the cancellation. If both agree, funds are returned to the buyer in full (minus any non-refundable payment processing fees). After delivery is marked, the normal inspection and dispute process applies.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">How long does the whole process take?</span>
+          <div class="faq-chevron">▼</div>
+        </div>
+        <div class="faq-a">The timeline depends entirely on the delivery method and inspection period both parties agree on. A domain name transfer might complete in 24 hours. A business acquisition with a 30-day due diligence period could take over a month. TrustBridge doesn't impose any time limits beyond what both parties set.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">Is TrustBridge available internationally?</span>
+          <div class="faq-chevron">▼</div>
+        </div>
+        <div class="faq-a">Yes. TrustBridge supports transactions in 180+ countries. International wire transfers and USDC cryptocurrency are the most popular cross-border payment methods. Note that certain high-risk jurisdictions may be restricted due to regulatory requirements. Contact support if you're unsure about your country.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span class="faq-q-text">What is USDC and why do you use it for crypto payments?</span>
+          <div class="faq-chevron">▼</div>
+        </div>
+        <div class="faq-a">USDC (USD Coin) is a stablecoin — a cryptocurrency whose value is pegged 1:1 to the US Dollar. Unlike Bitcoin or Ethereum, its value doesn't fluctuate. We use USDC on the Solana network because transactions are near-instant (under 1 second) and fees are negligible (fractions of a cent). This makes it ideal for fast, predictable cross-border payments.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-strip">
+  <div class="section-inner cta-strip-inner">
+    <h2>Ready to Transact Safely?</h2>
+    <p>Start your first TrustBridge transaction in under 5 minutes.</p>
+    <div class="cta-btns">
+      <a href="start-transaction.html" class="btn-white">Start a Transaction — Free</a>
+      <a href="dashboard.html" class="btn-outline-w">Check a Transaction</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="index.html" class="logo"><div class="logo-icon"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1zm0 4.9l5 2.23V11c0 3.46-2.38 6.69-5 7.93-2.62-1.24-5-4.47-5-7.93V8.13L12 5.9z"/></svg></div><span class="logo-text">Trust<span>Bridge</span></span></a>
+        <p>The world's most trusted online escrow service. Protecting buyers and sellers in over 180 countries since 2018.</p>
+      </div>
+      <div class="footer-col"><h4>Services</h4><a href="start-transaction.html?cat=domain">Domain Escrow</a><a href="start-transaction.html?cat=real-estate">Real Estate</a><a href="start-transaction.html?cat=vehicle">Vehicles</a><a href="start-transaction.html?cat=business">Business Sales</a></div>
+      <div class="footer-col"><h4>Company</h4><a href="#">About Us</a><a href="how-it-works.html">How it Works</a><a href="#">Support</a></div>
+      <div class="footer-col"><h4>Legal</h4><a href="#">Terms of Service</a><a href="#">Privacy Policy</a><a href="#">Compliance</a><a href="#">Licenses</a></div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 TrustBridge Financial Services, Inc. All rights reserved.</p>
+      <div class="footer-badges"><span class="badge-pill">SSL Secured</span><span class="badge-pill">FDIC Insured</span><span class="badge-pill">Licensed</span></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  (async function(){ await TBAuthUI.init(); })();
+
+  function toggleFaq(q) {
+    const item = q.closest('.faq-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); io.unobserve(e.target); } });
+  }, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
+  document.querySelectorAll('.reveal').forEach(r => io.observe(r));
+</script>
+</body>
+</html>
