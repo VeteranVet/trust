@@ -700,12 +700,12 @@
         <div class="form-row cols-2">
           <div class="form-group">
             <label>First Name</label>
-            <input type="text" id="my-first" placeholder="First Name" />
+            <input type="text" id="my-first" placeholder="John" />
             <span class="field-error" id="my-first-error">Required.</span>
           </div>
           <div class="form-group">
             <label>Last Name</label>
-            <input type="text" id="my-last" placeholder="Last Name" />
+            <input type="text" id="my-last" placeholder="Smith" />
             <span class="field-error" id="my-last-error">Required.</span>
           </div>
         </div>
@@ -1453,7 +1453,7 @@
     showStep(n);
   }
 
-  function nextStep(from) {
+  async function nextStep(from) {
     if (!await validateStep(from)) return;
     state.maxUnlocked = Math.max(state.maxUnlocked, from + 1);
     if (from === 3) buildReview();
@@ -1565,11 +1565,10 @@
         document.getElementById('counterparty-error').textContent = 'You cannot invite yourself.';
         showError('counterparty-error', 'counterparty-username'); ok = false;
       } else {
-        // Check username via API
         try {
-          const checkRes = await fetch('/api/check-username?username=' + encodeURIComponent(cpInput));
-          const checkData = await checkRes.json();
-          if (checkData.available) {
+          const _r = await fetch('/api/check-username?username=' + encodeURIComponent(cpInput));
+          const _d = await _r.json();
+          if (_d.available) {
             document.getElementById('counterparty-error').textContent = 'Username not found on TrustBridge. They must have an account to be invited.';
             showError('counterparty-error', 'counterparty-username'); ok = false;
             cpStatus.innerHTML = '<span style="color:#e53e3e;">✗ No TrustBridge account found for this username.</span>';
@@ -1579,7 +1578,6 @@
             cpStatus.innerHTML = '<span style="color:#27a85e;font-weight:600;">✓ Username found on TrustBridge</span>';
           }
         } catch(e) {
-          // Network error - allow to proceed
           hideError('counterparty-error', 'counterparty-username');
         }
       }
@@ -1639,7 +1637,7 @@
   }
 
   // ── SUBMIT ──
-  function submitTransaction() {
+  async function submitTransaction() {
     const checks = ['agree-terms', 'agree-privacy', 'agree-accurate'];
     const allChecked = checks.every(id => document.getElementById(id).checked);
     if (!allChecked) {
@@ -1750,21 +1748,15 @@
   }
 
   // ── AUTO-SELECT CATEGORY FROM URL PARAM ──
-  window.addEventListener('DOMContentLoaded', () => {
-    // Build the custom service type dropdown
+  window.addEventListener('DOMContentLoaded', async () => {
     buildSvcDropdown();
-
-    // Require login to use this page
     await TBAuthUI.init({ requireAuth: true });
 
-    // Auto-fill username from logged-in account
     const user = TBAuth.getUser();
     if (user) {
-      // Pre-fill first name with username as a convenience hint
       document.getElementById('my-first').placeholder = user.username;
     }
 
-    // Live counterparty username check
     document.getElementById('counterparty-username').addEventListener('input', function() {
       const val = this.value.trim();
       const cpStatus = document.getElementById('counterparty-status');
