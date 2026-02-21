@@ -1,16 +1,1 @@
-services:
-  - type: web
-    name: trustbridge-escrow
-    env: node
-    buildCommand: npm install
-    startCommand: node server.js
-    plan: free
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: DATA_DIR
-        value: /opt/render/project/src/data
-    disk:
-      name: trustbridge-data
-      mountPath: /opt/render/project/src/data
-      sizeGB: 1
+
