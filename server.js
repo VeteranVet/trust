@@ -6,18 +6,33 @@ const crypto  = require('crypto');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-const DATA_DIR   = process.env.DATA_DIR || path.join(__dirname, 'data');
+// Always store data next to server.js — no env var needed
+const DATA_DIR   = path.join(__dirname, 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 if (!fs.existsSync(USERS_FILE)) fs.writeFileSync(USERS_FILE, JSON.stringify({}, null, 2));
 
+console.log('Users file location:', USERS_FILE);
+
 function readUsers() {
-  try { return JSON.parse(fs.readFileSync(USERS_FILE, 'utf8')); }
-  catch { return {}; }
+  try {
+    const raw = fs.readFileSync(USERS_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    console.log('readUsers: found', Object.keys(parsed).length, 'users');
+    return parsed;
+  } catch(e) {
+    console.error('readUsers error:', e.message);
+    return {};
+  }
 }
 function writeUsers(users) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+  try {
+    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+    console.log('writeUsers: saved', Object.keys(users).length, 'users');
+  } catch(e) {
+    console.error('writeUsers error:', e.message);
+  }
 }
 function hashPassword(pw) {
   return crypto.createHash('sha256').update(pw + 'tb_secret_salt_2025').digest('hex');
@@ -55,8 +70,9 @@ app.post('/api/register', (req, res) => {
   if (password.length < 6)
     return res.json({ ok: false, err: 'Password must be at least 6 characters.' });
   const users = readUsers();
-  if (Object.values(users).some(u => u.username.toLowerCase() === username.toLowerCase()))
-    return res.json({ ok: false, err: 'Username already taken.' });
+  const taken = Object.values(users).some(u => u.username.toLowerCase() === username.toLowerCase());
+  console.log('register attempt:', username, '| taken:', taken);
+  if (taken) return res.json({ ok: false, err: 'Username already taken.' });
   const id = 'u_' + Date.now();
   const token = makeToken();
   users[id] = { id, username, password: hashPassword(password), token, createdAt: Date.now(), transactions: [] };
@@ -72,6 +88,7 @@ app.post('/api/login', (req, res) => {
   const found = Object.values(users).find(
     u => u.username.toLowerCase() === username && u.password === hashPassword(password)
   );
+  console.log('login attempt:', username, '| found:', !!found);
   if (!found) return res.json({ ok: false, err: 'Incorrect username or password.' });
   const token = makeToken();
   users[found.id].token = token;
