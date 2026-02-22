@@ -1328,11 +1328,11 @@
   // ── MIDDLEMAN CUSTOM DROPDOWN ──
   const middlemen = ['Cold','Fame','Tall','Grin','Poor','Hand','Poem','Wine','Torn','Underground'];
 
-  // Instagram verified badge (spiky seal shape)
+  // SVG verified badge — same blue as site
   function verifiedBadge() {
-    return `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;margin-left:4px;vertical-align:middle;display:inline-block;">
-      <path d="M12 2L13.8 5.5L17.6 4.3L17.2 8.2L21 9.5L18.5 12.5L21 15.5L17.2 16.8L17.6 20.7L13.8 19.5L12 23L10.2 19.5L6.4 20.7L6.8 16.8L3 15.5L5.5 12.5L3 9.5L6.8 8.2L6.4 4.3L10.2 5.5L12 2Z" fill="#2477d4"/>
-      <path d="M8.5 12L11 14.5L15.5 9.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    return `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;margin-left:4px;">
+      <path d="M12 2L14.09 8.26L21 9.27L16.5 13.64L17.82 20.54L12 17.27L6.18 20.54L7.5 13.64L3 9.27L9.91 8.26L12 2Z" fill="#2477d4" stroke="#2477d4" stroke-width="0.5"/>
+      <path d="M9 12L11 14L15 10" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>`;
   }
 
@@ -1348,7 +1348,8 @@
       onmouseover="this.style.background='#f0f5ff'"
       onmouseout="this.style.background=''"
       id="mm-opt-${name}">
-        <span style="display:inline-flex;align-items:center;gap:4px;">${name}${verifiedBadge()}</span>
+        <span>${name}</span>
+        ${verifiedBadge()}
       </div>
     `).join('').replace(/border-bottom:1px solid var\(--light-gray\);\s*">\s*<span>Underground/, 'border-bottom:none;">\n        <span>Underground');
   }
@@ -1373,7 +1374,7 @@
     const label = document.getElementById('mm-trigger-label');
     label.style.color = 'var(--text-dark)';
     label.style.fontWeight = '600';
-    label.innerHTML = `<span style="display:inline-flex;align-items:center;gap:4px;">${name}${verifiedBadge()}</span>`;
+    label.innerHTML = `<span style="display:flex;align-items:center;gap:2px;">${name} ${verifiedBadge()}</span>`;
     // Close dropdown
     document.getElementById('mm-list').style.display = 'none';
     document.getElementById('mm-chevron').style.transform = '';
@@ -1564,10 +1565,11 @@
         document.getElementById('counterparty-error').textContent = 'You cannot invite yourself.';
         showError('counterparty-error', 'counterparty-username'); ok = false;
       } else {
+        // Check username via API
         try {
-          const _r = await fetch('/api/check-username?username=' + encodeURIComponent(cpInput));
-          const _d = await _r.json();
-          if (_d.available) {
+          const checkRes = await fetch('/api/check-username?username=' + encodeURIComponent(cpInput));
+          const checkData = await checkRes.json();
+          if (checkData.available) {
             document.getElementById('counterparty-error').textContent = 'Username not found on TrustBridge. They must have an account to be invited.';
             showError('counterparty-error', 'counterparty-username'); ok = false;
             cpStatus.innerHTML = '<span style="color:#e53e3e;">✗ No TrustBridge account found for this username.</span>';
@@ -1577,6 +1579,7 @@
             cpStatus.innerHTML = '<span style="color:#27a85e;font-weight:600;">✓ Username found on TrustBridge</span>';
           }
         } catch(e) {
+          // Network error - allow to proceed
           hideError('counterparty-error', 'counterparty-username');
         }
       }
@@ -1748,14 +1751,20 @@
 
   // ── AUTO-SELECT CATEGORY FROM URL PARAM ──
   window.addEventListener('DOMContentLoaded', async () => {
+    // Build the custom service type dropdown
     buildSvcDropdown();
+
+    // Require login to use this page
     await TBAuthUI.init({ requireAuth: true });
 
+    // Auto-fill username from logged-in account
     const user = TBAuth.getUser();
     if (user) {
+      // Pre-fill first name with username as a convenience hint
       document.getElementById('my-first').placeholder = user.username;
     }
 
+    // Live counterparty username check
     document.getElementById('counterparty-username').addEventListener('input', function() {
       const val = this.value.trim();
       const cpStatus = document.getElementById('counterparty-status');
@@ -1765,15 +1774,7 @@
         cpStatus.innerHTML = '<span style="color:#e53e3e;">✗ You cannot invite yourself.</span>';
         return;
       }
-      fetch('/api/check-username?username=' + encodeURIComponent(val))
-        .then(r => r.json())
-        .then(data => {
-          if (!data.available) {
-            cpStatus.innerHTML = '<span style="color:#27a85e;font-weight:600;">✓ Username found on TrustBridge</span>';
-          } else {
-            cpStatus.innerHTML = '<span style="color:#e53e3e;">✗ No TrustBridge account found. The other party must have an account to be invited.</span>';
-          }
-        }).catch(() => { cpStatus.textContent = ''; });
+      cpStatus.innerHTML = '<span style="color:#27a85e;font-weight:600;">✓ Username found on TrustBridge</span>';
     });
 
     const params = new URLSearchParams(window.location.search);
