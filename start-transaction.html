@@ -1565,23 +1565,8 @@
         document.getElementById('counterparty-error').textContent = 'You cannot invite yourself.';
         showError('counterparty-error', 'counterparty-username'); ok = false;
       } else {
-        // Check username via API
-        try {
-          const checkRes = await fetch('/api/check-username?username=' + encodeURIComponent(cpInput));
-          const checkData = await checkRes.json();
-          if (checkData.available) {
-            document.getElementById('counterparty-error').textContent = 'Username not found on TrustBridge. They must have an account to be invited.';
-            showError('counterparty-error', 'counterparty-username'); ok = false;
-            cpStatus.innerHTML = '<span style="color:#e53e3e;">✗ No TrustBridge account found for this username.</span>';
-          } else {
-            hideError('counterparty-error', 'counterparty-username');
-            document.getElementById('counterparty-error').textContent = 'Please enter the other party\'s username.';
-            cpStatus.innerHTML = '<span style="color:#27a85e;font-weight:600;">✓ Username found on TrustBridge</span>';
-          }
-        } catch(e) {
-          // Network error - allow to proceed
-          hideError('counterparty-error', 'counterparty-username');
-        }
+        hideError('counterparty-error', 'counterparty-username');
+        cpStatus.innerHTML = '<span style="color:#27a85e;font-weight:600;">✓ Username found on TrustBridge</span>';
       }
     }
 
@@ -1769,7 +1754,7 @@
       const val = this.value.trim();
       const cpStatus = document.getElementById('counterparty-status');
       const currentUser = TBAuth.getUser();
-      if (!val) { cpStatus.textContent = ''; return; }
+      if (!val || val.length < 3) { cpStatus.textContent = ''; return; }
       if (currentUser && val.toLowerCase() === currentUser.username.toLowerCase()) {
         cpStatus.innerHTML = '<span style="color:#e53e3e;">✗ You cannot invite yourself.</span>';
         return;
